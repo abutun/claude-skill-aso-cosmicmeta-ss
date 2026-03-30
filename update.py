@@ -19,7 +19,7 @@ import urllib.request
 import urllib.error
 
 REPO = "abutun/claude-skill-aso-cosmicmeta-ss"
-GITHUB_API = f"https://api.github.com/repos/{REPO}/tags"
+GITHUB_API = f"https://api.github.com/repos/{REPO}/releases/latest"
 GITHUB_URL = f"https://github.com/{REPO}"
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -35,20 +35,19 @@ def get_local_version():
 
 
 def get_remote_version():
-    """Fetch the latest tag from GitHub API."""
+    """Fetch the latest release from GitHub API."""
     req = urllib.request.Request(
         GITHUB_API,
         headers={"Accept": "application/vnd.github.v3+json"},
     )
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            tags = json.loads(resp.read().decode("utf-8"))
-            if tags:
-                # Tags are returned newest first
-                latest = tags[0]["name"]
+            release = json.loads(resp.read().decode("utf-8"))
+            if release:
+                tag = release.get("tag_name", "")
                 # Strip 'v' prefix if present
-                return latest.lstrip("v")
-    except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError):
+                return tag.lstrip("v")
+    except (urllib.error.URLError, urllib.error.HTTPError, KeyError):
         pass
     return None
 
