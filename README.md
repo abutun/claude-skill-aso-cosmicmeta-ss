@@ -1,17 +1,18 @@
 # ASO Screenshot Generator
 
-Generate high-converting App Store & Google Play screenshots with device frames, benefit-driven headlines, and multi-language support. Works as a standalone CLI tool or as a Claude Code skill with a guided 5-phase workflow.
+Generate high-converting App Store & Google Play screenshots with device frames, benefit-driven headlines, multi-language support, and cultural visual touches. Works as a standalone CLI tool or as a Claude Code skill with a guided 6-phase workflow.
 
 ## Features
 
-- **Dual platform** — iOS (1320x2868) and Android (1080x1920) output in one workflow
-- **6-8 screenshots** per platform with benefit-driven action headlines
-- **Multi-language** — Headlines in any language (English, Turkish, Spanish, German, Japanese, etc.)
-- **Manual or auto** — Provide your own screenshots or capture from simulator
-- **Device frames** — Realistic iPhone 16 Pro Max and Pixel-style Android frames with Dynamic Island / punch-hole camera
+- **4 platforms** — iOS phone (1320×2868), Android phone (1080×1920), iPad Pro 13" (2064×2752), Android tablet (1600×2560)
+- **6–8 screenshots** per platform with benefit-driven action headlines
+- **English-first multi-language** — Generate in English, then translate to any language via Gemini with one command
+- **Cultural visual touches** — `--lang-code` automatically weaves culturally resonant aesthetics into the visuals (Ottoman tiles for Turkish, Bauhaus geometry for German, cherry blossoms for Japanese, etc.)
+- **Standardised output naming** — Files follow `{lang_code}_{n:02d}.png` format (e.g., `en_01.png`, `tr_05.png`, `de_03.png`)
+- **Device frames** — Realistic iPhone 16 Pro Max, Pixel-style Android, iPad Pro 13", and Android tablet frames
 - **High CTR design** — Action verbs, visual hierarchy, bold brand colours, subtle gradients
 - **Smart text colour** — Automatically picks white or dark text based on background luminance
-- **Gemini AI enhancement** — All screenshots are polished with `nano-banana-pro` or `nano-banana-2` models for professional-grade output
+- **Gemini AI enhancement** — All screenshots are polished with `nano-banana-pro` or `nano-banana-2` for professional-grade output
 - **No paywall rule** — Enforced throughout the workflow (never includes subscription/IAP screens)
 
 ## Requirements
@@ -26,38 +27,37 @@ Generate high-converting App Store & Google Play screenshots with device frames,
 ### 1. Clone and install dependencies
 
 ```bash
-# Clone the repo
 git clone https://github.com/abutun/claude-skill-aso-cosmicmeta-ss.git
 cd claude-skill-aso-cosmicmeta-ss
-
-# Install the Python dependency
 pip3 install Pillow
 ```
 
 ### 2. Install the font
 
-The skill uses **SF Pro Display Black** for headline text. On macOS, download and install it from [Apple's developer fonts](https://developer.apple.com/fonts/). The expected path after installation is:
+The skill uses **SF Pro Display Black** for headline text. On macOS, download and install it from [Apple's developer fonts](https://developer.apple.com/fonts/). Expected path after installation:
 
 ```
 /Library/Fonts/SF-Pro-Display-Black.otf
 ```
 
-If SF Pro is not available, the script falls back to other system fonts (Helvetica on macOS, DejaVu Sans on Linux), but SF Pro Display Black is strongly recommended for the best visual results.
+Falls back to Helvetica (macOS) or DejaVu Sans (Linux) if SF Pro is unavailable.
 
 ### 3. Generate device frames
 
 ```bash
-# Only needed once (or after modifying frame constants)
 python3 generate_frame.py
 ```
 
-This creates two frame PNGs in `assets/`:
-- `iphone_frame.png` (1054x2870 — iPhone 16 Pro Max style)
-- `android_frame.png` (900x1980 — Pixel style)
+Creates four frame PNGs in `assets/`:
 
-### Gemini API Key (Required)
+| File | Device | Size |
+|------|--------|------|
+| `iphone_frame.png` | iPhone 16 Pro Max (Dynamic Island) | 1054×2870 |
+| `android_frame.png` | Pixel-style phone (punch-hole) | 900×1980 |
+| `ipad_frame.png` | iPad Pro 13" (front camera) | 1600×2400 |
+| `android_tablet_frame.png` | Android 10" tablet (punch-hole) | 1280×2200 |
 
-All screenshots are enhanced with Gemini AI. Set up your API key before generating:
+### 4. Configure Gemini API key
 
 ```bash
 # Option 1: Environment variable
@@ -66,165 +66,189 @@ export GEMINI_API_KEY="your-api-key-here"
 # Option 2: Save to config file (persists across sessions)
 python3 gemini_enhance.py --save-key "your-api-key-here"
 
-# Option 3: Pass directly via CLI each time
+# Option 3: Pass directly each time
 python3 gemini_enhance.py --api-key "your-api-key-here" ...
 ```
 
-Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
+Get your key from [Google AI Studio](https://aistudio.google.com/apikey).
 
 ## Usage
 
 ### Option A — Claude Code Skill (Recommended)
 
-Add this repo as a skill in Claude Code and let the guided workflow handle everything.
+Install and invoke via Claude Code for a fully guided workflow.
 
-**Install the skill using one of these methods:**
-
-**Method 1 — Using `npx add-skill` CLI (easiest):**
+**Install via `npx add-skill`:**
 
 ```bash
 npx skills add abutun/claude-skill-aso-cosmicmeta-ss
 ```
 
-Select the installation scope when prompted:
-- **Personal** (available across all projects): installs to `~/.claude/skills/`
-- **Project-specific** (current repo only): installs to `.claude/skills/`
-
-**Method 2 — Manual installation:**
+**Or manually:**
 
 ```bash
-# Clone the repo
-git clone https://github.com/abutun/claude-skill-aso-cosmicmeta-ss.git
-
-# For personal use (available across all projects)
+# Personal (all projects)
 cp -r claude-skill-aso-cosmicmeta-ss ~/.claude/skills/
 
-# OR for project-specific use (current repo only)
+# Project-specific
 cp -r claude-skill-aso-cosmicmeta-ss .claude/skills/
 ```
 
-> **Note:** The `SKILL.md` file must be directly inside the skill folder, not nested in an extra level of directories.
+Restart your Claude Code session, then ask Claude to generate store screenshots.
 
-**After installation:**
-
-1. Restart your Claude Code session to ensure the new skill is detected and loaded
-2. Verify by typing `/` followed by the skill name, or ask Claude to generate store screenshots
-
-**The skill walks through 5 phases:**
+**The skill walks through 6 phases:**
 
 | Phase | What happens |
 |-------|-------------|
-| **1. Configuration** | Choose platforms, screenshot count (6 or 8), language, screenshot source, brand colour, Gemini model (`nano-banana-pro` or `nano-banana-2`), and API key |
-| **2. Benefit Discovery** | Analyzes your codebase (or asks you) to identify core value propositions and craft action-verb headlines |
-| **3. Screenshot Pairing** | Matches your app screenshots to benefits, assesses quality, enforces the no-paywall rule |
-| **4. Generation** | Runs `compose.py` for each benefit-screenshot pair, enhances with Gemini AI, verifies output quality |
-| **5. Showcase** | Generates a side-by-side preview and provides upload instructions for App Store Connect and Google Play Console |
+| **1. Configuration** | Choose platforms (phone / tablet / all), screenshot count, language, source, brand colour, Gemini model & API key |
+| **2. Benefit Discovery** | Analyzes your codebase (or asks you) to craft action-verb headlines |
+| **3. Screenshot Pairing** | Matches app screenshots to benefits, quality-checks, enforces no-paywall rule |
+| **4. Generation** | Runs `compose.py` + Gemini enhancement; outputs `en_01.png` … `en_0N.png` per platform |
+| **5. Showcase** | Generates a side-by-side preview; provides upload instructions |
+| **6. Multi-language** | Translates English screenshots to any language via Gemini, with cultural touches per locale |
 
 **Example interaction:**
+
 ```
 You: Generate store screenshots for my app
-Claude: [Starts Phase 1 — asks for platform, count, language, etc.]
-You: Both platforms, 6 screenshots, Turkish
-Claude: [Analyzes codebase, proposes headlines in Turkish...]
+Claude: [Phase 1 — asks for platforms, count, language...]
+You: All platforms, 6 screenshots, English first then Turkish and German
+Claude: [Analyzes codebase, proposes headlines, generates en_01–en_06 for all 4 platforms,
+         then tr_01–tr_06 with Ottoman tile cultural accents,
+         then de_01–de_06 with Bauhaus geometry accents...]
 ```
 
 ### Option B — Standalone CLI
 
-Use the Python scripts directly without Claude Code.
-
-#### compose.py — Generate a single screenshot
+#### compose.py — Compose a single screenshot
 
 ```bash
-# iOS screenshot
+# iOS phone
 python3 compose.py \
   --platform ios \
   --bg "#E31837" \
   --verb "TRACK" \
   --desc "YOUR DAILY MOOD" \
-  --screenshot path/to/app_screenshot.png \
-  --output output/ios/screenshot_1.png
+  --screenshot path/to/shot.png \
+  --output output/ios/en_01.png
 
-# Android screenshot
+# iPad Pro 13"
+python3 compose.py \
+  --platform ipad \
+  --bg "#E31837" \
+  --verb "TRACK" \
+  --desc "YOUR DAILY MOOD" \
+  --screenshot path/to/shot_tablet.png \
+  --output output/ipad/en_01.png
+
+# Android phone
 python3 compose.py \
   --platform android \
   --bg "#1A73E8" \
   --verb "DISCOVER" \
   --desc "NEW FEATURES" \
-  --screenshot path/to/app_screenshot.png \
-  --output output/android/screenshot_1.png
+  --screenshot path/to/shot.png \
+  --output output/android/en_01.png
 
-# Disable the subtle background gradient
+# Android tablet
 python3 compose.py \
-  --platform ios \
-  --bg "#2D2D2D" \
-  --verb "CREATE" \
-  --desc "BEAUTIFUL DESIGNS" \
-  --screenshot shot.png \
-  --output output.png \
-  --no-gradient
+  --platform android_tablet \
+  --bg "#1A73E8" \
+  --verb "DISCOVER" \
+  --desc "NEW FEATURES" \
+  --screenshot path/to/shot_tablet.png \
+  --output output/android_tablet/en_01.png
 ```
 
-**compose.py arguments:**
+**Arguments:**
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `--platform` | Yes | `ios` or `android` |
+| `--platform` | Yes | `ios`, `android`, `ipad`, `android_tablet` |
 | `--bg` | Yes | Background hex colour (e.g., `#E31837`) |
 | `--verb` | Yes | Action verb headline (e.g., `TRACK`) |
 | `--desc` | Yes | Benefit descriptor (e.g., `YOUR DAILY MOOD`) |
 | `--screenshot` | Yes | Path to the app screenshot PNG/JPG |
 | `--output` | Yes | Output file path |
-| `--no-gradient` | No | Disable the subtle background gradient overlay |
+| `--no-gradient` | No | Disable subtle background gradient overlay |
 
-#### gemini_enhance.py — AI-powered screenshot enhancement
+#### gemini_enhance.py — AI enhancement, translation & cultural touches
 
-This is the critical step that transforms plain mockups into premium, high-converting visuals with floating decorative elements, dynamic lighting, 3D perspectives, and rich backgrounds.
+This transforms plain mockups into premium, high-converting visuals. Handles enhancement, translation, cultural localisation, and output renaming in one step.
 
 ```bash
-# Enhance with app context (recommended)
-python3 gemini_enhance.py \
-  --input output/ios/screenshot_1.png \
-  --output output/ios/screenshot_1.png \
-  --model nano-banana-pro \
-  --app-desc "tunnel racing game" \
-  --bg-color "#0D7377"
-
-# Batch enhance all screenshots with context
+# Enhance English screenshots (phone)
 python3 gemini_enhance.py \
   --input-dir output/ios/ \
   --output-dir output/ios/ \
   --model nano-banana-pro \
   --app-desc "mood tracking app" \
-  --bg-color "#E31837"
+  --bg-color "#E31837" \
+  --lang-code "en"
+# → outputs en_01.png, en_02.png, ...
 
-# Use a custom enhancement prompt
+# Translate to Turkish with Ottoman cultural touches
 python3 gemini_enhance.py \
-  --input screenshot.png \
+  --input-dir output/ios/ \
+  --output-dir output/tr/ios/ \
+  --model nano-banana-pro \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+# → outputs tr_01.png, tr_02.png, ... with subtle tile/tulip motifs
+
+# Translate to Japanese with wabi-sabi aesthetic
+python3 gemini_enhance.py \
+  --input-dir output/ios/ \
+  --output-dir output/ja/ios/ \
+  --model nano-banana-pro \
+  --translate-to "Japanese" \
+  --lang-code "ja"
+# → outputs ja_01.png, ja_02.png, ... with cherry blossom / ink-wash touches
+
+# Tablet platforms — same pattern
+python3 gemini_enhance.py \
+  --input-dir output/ipad/ \
+  --output-dir output/tr/ipad/ \
+  --model nano-banana-pro \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+
+# Single file
+python3 gemini_enhance.py \
+  --input output/ios/en_01.png \
+  --output output/tr/ios/tr_01.png \
+  --model nano-banana-2 \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+
+# Custom enhancement prompt
+python3 gemini_enhance.py \
+  --input shot.png \
   --output enhanced.png \
   --model nano-banana-2 \
   --prompt "Add warm lighting, floating music notes, and glass reflections"
 ```
 
-The script **alternates between two built-in prompt styles** (even/odd screenshots) to create visual variety across the set while maintaining a cohesive look.
-
-**gemini_enhance.py arguments:**
+**Arguments:**
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `--input` | Yes* | Input screenshot path |
-| `--output` | Yes* | Output enhanced screenshot path |
-| `--input-dir` | Yes* | Input directory for batch mode |
-| `--output-dir` | Yes* | Output directory for batch mode |
+| `--input` | Yes* | Input screenshot path (single file mode) |
+| `--output` | Yes* | Output path (single file mode) |
+| `--input-dir` | Yes* | Input directory (batch mode) |
+| `--output-dir` | Yes* | Output directory (batch mode) |
 | `--model` | Yes | `nano-banana-pro` (higher quality) or `nano-banana-2` (faster) |
-| `--app-desc` | No | Short app description for contextual decorative elements (e.g., `"tunnel racing game"`) |
-| `--bg-color` | No | Background hex color for gradient guidance (e.g., `"#1A73E8"`) |
+| `--lang-code` | No | ISO 639-1 code (e.g., `en`, `tr`, `de`, `ja`). Renames batch output to `{code}_{n:02d}.png` and adds cultural visual hints |
+| `--translate-to` | No | Translate headline text to this language (e.g., `"Turkish"`). Input must be English |
+| `--app-desc` | No | Short app description for contextual decorative elements |
+| `--bg-color` | No | Background hex colour for gradient guidance |
 | `--index` | No | Screenshot index for prompt alternation (even=style A, odd=style B) |
-| `--api-key` | No | Gemini API key (or use `GEMINI_API_KEY` env var / `.gemini_config.json`) |
-| `--save-key` | No | Save API key to `.gemini_config.json` for future use |
-| `--prompt` | No | Custom enhancement prompt (overrides built-in prompts) |
-| `--platform` | No | Force `ios` or `android` (auto-detected from dimensions) |
+| `--api-key` | No | Gemini API key (or use env var / config file) |
+| `--save-key` | No | Save API key to `.gemini_config.json` |
+| `--prompt` | No | Custom prompt (overrides built-in prompts) |
+| `--platform` | No | Force `ios`, `android`, `ipad`, or `android_tablet` (auto-detected from dimensions) |
 
-*Use either `--input`/`--output` for single file or `--input-dir`/`--output-dir` for batch.
+*Use either `--input`/`--output` or `--input-dir`/`--output-dir`.
 
 **Gemini models:**
 
@@ -233,19 +257,32 @@ The script **alternates between two built-in prompt styles** (even/odd screensho
 | `nano-banana-pro` | Higher | Slower | Final production screenshots |
 | `nano-banana-2` | Good | Faster | Rapid iteration and previews |
 
+**Cultural touches by language code:**
+
+| Code | Aesthetic applied |
+|------|-------------------|
+| `tr` | Ottoman geometric tiles, tulip motifs, terracotta & turquoise |
+| `de` | Bauhaus geometry, cool steel blues, structured minimalism |
+| `fr` | Art Nouveau curves, gold accents, Parisian elegance |
+| `ja` | Cherry blossoms, wabi-sabi simplicity, ink-wash textures |
+| `ko` | Hanji paper texture, bojagi colour geometry |
+| `zh` | Cloud ruyi patterns, bamboo, red & gold accents |
+| `ar` | Arabesque geometry, crescent motifs, lapis blue & gold |
+| `ru` | Constructivist geometry, deep reds & golds |
+| `es` | Moorish tile hints, sienna tones, Mediterranean vitality |
+| `it` | Renaissance composition, terracotta & cobalt |
+| `pt` | Azulejo tile patterns, deep indigo blues |
+| `hi` | Mandala patterns, saffron & marigold, Mughal geometry |
+| `uk` | Petrykivka folk florals, sunflowers, blue & gold |
+| `nl`, `pl`, `th`, `id` | Additional supported locales |
+
 #### showcase.py — Generate a preview gallery
 
 ```bash
-# Both platforms
 python3 showcase.py \
-  --ios output/ios/screenshot_1.png output/ios/screenshot_2.png output/ios/screenshot_3.png \
-  --android output/android/screenshot_1.png output/android/screenshot_2.png output/android/screenshot_3.png \
+  --ios output/ios/en_01.png output/ios/en_02.png output/ios/en_03.png \
+  --android output/android/en_01.png output/android/en_02.png output/android/en_03.png \
   --output showcase.png
-
-# iOS only
-python3 showcase.py \
-  --ios output/ios/screenshot_1.png output/ios/screenshot_2.png \
-  --output showcase_ios.png
 ```
 
 #### generate_frame.py — Regenerate device frames
@@ -254,37 +291,47 @@ python3 showcase.py \
 python3 generate_frame.py
 ```
 
-Overwrites `assets/iphone_frame.png` and `assets/android_frame.png`. Only needed if you modify the frame constants in the script.
+Regenerates all four frames in `assets/`. Only needed if you modify frame constants.
 
 ## Output Structure
 
 ```
 output/
-  ios/
-    screenshot_1.png    # 1320 x 2868 px
-    screenshot_2.png
-    screenshot_3.png
+  ios/                  ← English phone (1320×2868)
+    en_01.png
+    en_02.png
     ...
-  android/
-    screenshot_1.png    # 1080 x 1920 px
-    screenshot_2.png
-    screenshot_3.png
+  android/              ← English phone (1080×1920)
+    en_01.png
     ...
-showcase.png            # Side-by-side preview of all screenshots
+  ipad/                 ← English iPad Pro 13" (2064×2752)
+    en_01.png
+    ...
+  android_tablet/       ← English Android tablet (1600×2560)
+    en_01.png
+    ...
+  tr/
+    ios/                (tr_01.png … tr_0N.png — Turkish with Ottoman touches)
+    android/
+    ipad/
+    android_tablet/
+  de/
+    ios/                (de_01.png … — German with Bauhaus touches)
+    android/
+    ...
+showcase.png            ← Side-by-side preview
 ```
 
 ## Screenshot Dimensions
 
-| Platform | Width | Height | Device |
-|----------|-------|--------|--------|
-| iOS (App Store) | 1320 | 2868 | iPhone 6.9" (16 Pro Max) |
-| Android (Google Play) | 1080 | 1920 | Standard phone |
-
-These are the exact dimensions required by App Store Connect and Google Play Console for phone screenshots.
+| Platform | Width | Height | Store requirement |
+|----------|-------|--------|-------------------|
+| iOS phone (App Store) | 1320 | 2868 | iPhone 6.9" (16 Pro Max) |
+| Android phone (Google Play) | 1080 | 1920 | Standard phone |
+| iPad Pro 13" (App Store) | 2064 | 2752 | iPad Pro 13-inch |
+| Android tablet (Google Play) | 1600 | 2560 | Large screen phone/tablet |
 
 ## Updating
-
-The skill checks for updates automatically at the start of each run. You can also check manually:
 
 ```bash
 # Check if a new version is available
@@ -297,51 +344,45 @@ python3 update.py --update
 python3 update.py --version
 ```
 
-If the skill was installed via `git clone`, the update script uses `git pull`. If it was copied manually into `~/.claude/skills/`, it will provide instructions to re-download.
-
-After updating, device frames are automatically regenerated.
-
 ## Uploading to Stores
 
 ### Apple App Store Connect
 1. Go to **My Apps** > your app > **App Store** tab
-2. Scroll to **Screenshots** section
-3. Select **iPhone 6.9-inch Display**
-4. Upload the iOS screenshots in order (`screenshot_1.png` through `screenshot_N.png`)
+2. Scroll to **Screenshots**
+3. Upload iOS files (`en_01.png` … `en_0N.png`) under **iPhone 6.9-inch Display**
+4. Upload iPad files under **iPad Pro 13-inch Display**
 
 ### Google Play Console
 1. Go to your app > **Store presence** > **Main store listing**
-2. Scroll to **Phone screenshots**
-3. Upload the Android screenshots in order
+2. Upload Android phone files under **Phone screenshots**
+3. Upload Android tablet files under **Tablet screenshots** (10-inch)
 
 ## Design Principles
 
-The generated screenshots follow proven ASO best practices for maximum CTR and conversion:
-
 - **Benefit-first messaging** — Headlines communicate user value, not feature names
 - **Action verbs** — Bold verbs (TRACK, DISCOVER, BUILD, CREATE) drive engagement
-- **Visual hierarchy** — Eye flows naturally: headline > device > app content
+- **Visual hierarchy** — Eye flows naturally: headline → device → app content
 - **Consistent branding** — Same colour, typography, and layout across the entire set
 - **Real content** — Screenshots show the app in action, never empty states
-- **No clutter** — One benefit per screenshot, clean backgrounds, focused messaging
+- **Cultural authenticity** — Each language version resonates visually with its target market
 
 ## Customization
 
 ### Changing device frame appearance
-Edit the constants in `generate_frame.py` (corner radius, bezel width, colours, Dynamic Island size, etc.) and regenerate:
+Edit constants in `generate_frame.py` (corner radius, bezel, colours, etc.) and regenerate:
 ```bash
 python3 generate_frame.py
 ```
 
 ### Changing layout and typography
-Edit the `PLATFORMS` dict in `compose.py` to adjust:
+Edit the `PLATFORMS` dict in `compose.py`:
 - `device_y` — Vertical position of the device on canvas
 - `text_top` — Where headline text starts
 - `verb_size_max` / `verb_size_min` — Font size range for action verbs
 - `desc_size` — Font size for descriptors
 
 ### Using custom fonts
-Update the `FONT_CANDIDATES_BOLD` and `FONT_CANDIDATES_REGULAR` lists in `compose.py` to point to your preferred fonts.
+Update `FONT_CANDIDATES_BOLD` and `FONT_CANDIDATES_REGULAR` in `compose.py`.
 
 ## License
 
