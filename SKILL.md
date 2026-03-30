@@ -385,12 +385,34 @@ Use Gemini to generate translated versions of your English screenshots. This is 
 - English screenshots must already be generated and enhanced (Phase 4 output)
 - Same Gemini model and API key from Phase 4
 
+### Pre-translation questions — ask before every language
+
+Before running any translate command, ask the user these two questions:
+
+**Question 1 — Style matching:**
+> "Should the translated screenshots keep the same visual style as the English originals (same background colour, gradients, decorative elements)? **[Y/n, default Yes]**"
+
+- **Yes (default)** → omit `--no-style-match` (style is preserved)
+- **No** → add `--no-style-match` (Gemini may adapt gradients and decorative elements for the locale)
+
+**Question 2 — Cultural elements:**
+> "Should culturally specific visual elements be added for this language (e.g., Ottoman tiles for Turkish, cherry blossoms for Japanese)? **[y/N, default No]**"
+
+- **No (default)** → omit `--cultural-elements`
+- **Yes** → add `--cultural-elements` (Gemini weaves culturally resonant motifs into decorative areas)
+
+Save answers to memory and apply them to every `gemini_enhance.py` translate call for this language run.
+
+---
+
 ### Translate a single language
 
-Always pass `--lang-code` so output files are named correctly (`tr_01.png`, `tr_02.png`, etc.) and culturally resonant decorative elements are added automatically.
+Always pass `--lang-code` so output files are named correctly (`tr_01.png`, `tr_02.png`, etc.).
+Add `--no-style-match` and/or `--cultural-elements` based on the user's answers above.
 
 ```bash
 # Translate all iOS phone screenshots to Turkish
+# (example with style preserved, no cultural elements — the defaults)
 python3 gemini_enhance.py \
   --input-dir output/en/ios/ \
   --output-dir output/tr/ios/ \
@@ -398,7 +420,18 @@ python3 gemini_enhance.py \
   --translate-to "Turkish" \
   --lang-code "tr"
 
+# Same, but with style adaptation and cultural elements enabled
+python3 gemini_enhance.py \
+  --input-dir output/en/ios/ \
+  --output-dir output/tr/ios/ \
+  --model "{gemini_model}" \
+  --translate-to "Turkish" \
+  --lang-code "tr" \
+  --no-style-match \
+  --cultural-elements
+
 # Translate all Android phone screenshots to German
+# (append --no-style-match and/or --cultural-elements per user answers)
 python3 gemini_enhance.py \
   --input-dir output/en/android/ \
   --output-dir output/de/android/ \
@@ -406,7 +439,7 @@ python3 gemini_enhance.py \
   --translate-to "German" \
   --lang-code "de"
 
-# Translate iPad screenshots (same pattern)
+# Translate iPad screenshots (same pattern, same optional flags)
 python3 gemini_enhance.py \
   --input-dir output/en/ipad/ \
   --output-dir output/tr/ipad/ \
@@ -432,6 +465,7 @@ python3 gemini_enhance.py \
   --model "{gemini_model}" \
   --translate-to "Turkish" \
   --lang-code "tr"
+  # add --no-style-match and/or --cultural-elements if the user chose those options
 ```
 
 ### Batch translate multiple languages

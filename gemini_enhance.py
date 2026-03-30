@@ -363,24 +363,64 @@ def build_prompt(base_prompt, app_desc=None, bg_color=None, lang_code=None):
     return "".join(parts)
 
 
-def build_translation_prompt(language, lang_code=None):
-    """Build a translation prompt for the given target language with optional cultural context."""
+def build_translation_prompt(language, lang_code=None,
+                             preserve_style=True, cultural_elements=False):
+    """Build a translation prompt for the given target language.
+
+    Args:
+        language:          Full language name (e.g. 'Turkish')
+        lang_code:         ISO 639-1 code for cultural hint lookup (e.g. 'tr')
+        preserve_style:    If True (default), keep background colours, gradients,
+                           and decorative elements identical to the English original.
+                           If False, allow Gemini to adapt the visual style.
+        cultural_elements: If True, weave culturally resonant decorative touches
+                           into the output. Default False.
+    """
     base = TRANSLATION_PROMPT_TEMPLATE.format(language=language)
-    if lang_code and lang_code.lower() in CULTURAL_HINTS:
+
+    if preserve_style:
+        base += (
+            "\n\nSTYLE PRESERVATION — REQUIRED:\n"
+            "Keep the visual style identical to the English original:\n"
+            "- Background color and gradient must stay exactly the same\n"
+            "- All decorative elements (floating icons, particles, shapes, glows) "
+            "must remain in the same positions with the same colors\n"
+            "- Device frame tilt angle, shadows, and reflections must be unchanged\n"
+            "- Only the text content changes — the visual style is locked"
+        )
+    else:
+        base += (
+            "\n\nSTYLE ADAPTATION — ALLOWED:\n"
+            f"You MAY adapt the visual style to better suit {language}-speaking markets:\n"
+            "- Background gradients and color accents may shift within the same brand color family\n"
+            "- Decorative elements, floating graphics, and particle effects may be refreshed\n"
+            "- Device frame angle and composition may be adjusted for visual variety\n"
+            "- Keep the overall brand color (hue) recognisable — don't change it completely"
+        )
+
+    if cultural_elements and lang_code and lang_code.lower() in CULTURAL_HINTS:
         hint = CULTURAL_HINTS[lang_code.lower()]
         base += (
-            f"\n\nCULTURAL CONTEXT: This screenshot targets {language}-speaking markets. "
-            f"While translating, also subtly weave in culturally resonant visual elements "
-            f"into the decorative elements, background textures, and floating graphics: "
-            f"{hint}. "
-            f"These should feel natural and authentic, not stereotypical."
+            f"\n\nCULTURAL ELEMENTS — REQUESTED:\n"
+            f"Weave culturally resonant visual elements into this {language} screenshot:\n"
+            f"{hint}\n"
+            f"Integrate these into the decorative elements, background textures, and floating "
+            f"graphics. They should feel natural and authentic — never stereotypical or forced."
         )
+    elif cultural_elements:
+        base += (
+            f"\n\nCULTURAL ELEMENTS — REQUESTED:\n"
+            f"Add subtle visual elements that resonate culturally with {language}-speaking "
+            f"audiences. Integrate them naturally into decorative elements and backgrounds."
+        )
+
     return base
 
 
 def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
                         prompt=None, platform=None, app_desc=None,
-                        bg_color=None, index=0, translate_to=None, lang_code=None):
+                        bg_color=None, index=0, translate_to=None, lang_code=None,
+                        preserve_style=True, cultural_elements=False):
     """Send image to Gemini for enhancement (or translation) and save the result."""
     if model not in SUPPORTED_MODELS:
         print(f"  Error: Unknown model '{model}'. Supported: {', '.join(SUPPORTED_MODELS)}")
@@ -393,7 +433,11 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
     if prompt:
         enhance_prompt = prompt
     elif translate_to:
-        enhance_prompt = build_translation_prompt(translate_to, lang_code)
+        enhance_prompt = build_translation_prompt(
+            translate_to, lang_code,
+            preserve_style=preserve_style,
+            cultural_elements=cultural_elements,
+        )
     elif index % 2 == 0:
         enhance_prompt = build_prompt(DEFAULT_ENHANCE_PROMPT, app_desc, bg_color, lang_code)
     else:
@@ -480,7 +524,8 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
 
 def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
                   prompt=None, app_desc=None, bg_color=None,
-                  translate_to=None, lang_code=None):
+                  translate_to=None, lang_code=None,
+                  preserve_style=True, cultural_elements=False):
     """Enhance (or translate) all PNG files in a directory with alternating prompts.
 
     When lang_code is provided, output files are renamed to {lang_code}_{n:02d}.png
@@ -510,6 +555,7 @@ def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
                 str(img_file), str(out_file), api_key, model, prompt,
                 app_desc=app_desc, bg_color=bg_color, index=i,
                 translate_to=translate_to, lang_code=lang_code,
+                preserve_style=preserve_style, cultural_elements=cultural_elements,
             ):
                 success += 1
         except GeminiQuotaExceededError:
@@ -609,8 +655,27 @@ Examples:
         help=(
             "ISO 639-1 language code (e.g., en, tr, de, ja, fr). "
             "In batch mode, renames output files to {code}_{n:02d}.png (e.g., tr_01.png). "
-            "Also adds culturally resonant visual hints to the Gemini prompt for "
-            "supported languages (tr, de, fr, ja, ko, zh, ar, ru, es, it, pt, nl, pl, hi, th, id, uk)."
+            "Also used for cultural hint lookup when --cultural-elements is set."
+        ),
+    )
+    p.add_argument(
+        "--no-style-match",
+        action="store_true",
+        default=False,
+        help=(
+            "Allow Gemini to adapt the visual style (background gradients, decorative elements) "
+            "for the target locale instead of preserving the original exactly. "
+            "Default: style is preserved (--no-style-match is OFF)."
+        ),
+    )
+    p.add_argument(
+        "--cultural-elements",
+        action="store_true",
+        default=False,
+        help=(
+            "Weave culturally resonant decorative elements into the translated screenshot "
+            "(e.g., Ottoman tiles for Turkish, Bauhaus geometry for German). "
+            "Requires --lang-code for best results. Default: OFF."
         ),
     )
 
@@ -638,6 +703,8 @@ Examples:
             args.prompt, args.app_desc, args.bg_color,
             translate_to=args.translate_to,
             lang_code=args.lang_code,
+            preserve_style=not args.no_style_match,
+            cultural_elements=args.cultural_elements,
         )
         return
 
@@ -652,6 +719,8 @@ Examples:
             args.platform, args.app_desc, args.bg_color, args.index,
             translate_to=args.translate_to,
             lang_code=args.lang_code,
+            preserve_style=not args.no_style_match,
+            cultural_elements=args.cultural_elements,
         )
     except GeminiQuotaExceededError:
         print()
