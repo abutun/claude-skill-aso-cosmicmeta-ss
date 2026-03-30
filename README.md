@@ -130,7 +130,7 @@ python3 compose.py \
   --verb "TRACK" \
   --desc "YOUR DAILY MOOD" \
   --screenshot path/to/shot.png \
-  --output output/ios/en_01.png
+  --output output/en/ios/en_01.png
 
 # iPad Pro 13"
 python3 compose.py \
@@ -139,7 +139,7 @@ python3 compose.py \
   --verb "TRACK" \
   --desc "YOUR DAILY MOOD" \
   --screenshot path/to/shot_tablet.png \
-  --output output/ipad/en_01.png
+  --output output/en/ipad/en_01.png
 
 # Android phone
 python3 compose.py \
@@ -148,7 +148,7 @@ python3 compose.py \
   --verb "DISCOVER" \
   --desc "NEW FEATURES" \
   --screenshot path/to/shot.png \
-  --output output/android/en_01.png
+  --output output/en/android/en_01.png
 
 # Android tablet
 python3 compose.py \
@@ -157,7 +157,7 @@ python3 compose.py \
   --verb "DISCOVER" \
   --desc "NEW FEATURES" \
   --screenshot path/to/shot_tablet.png \
-  --output output/android_tablet/en_01.png
+  --output output/en/android_tablet/en_01.png
 ```
 
 **Arguments:**
@@ -179,8 +179,8 @@ This transforms plain mockups into premium, high-converting visuals. Handles enh
 ```bash
 # Enhance English screenshots (phone)
 python3 gemini_enhance.py \
-  --input-dir output/ios/ \
-  --output-dir output/ios/ \
+  --input-dir output/en/ios/ \
+  --output-dir output/en/ios/ \
   --model nano-banana-pro \
   --app-desc "mood tracking app" \
   --bg-color "#E31837" \
@@ -189,7 +189,7 @@ python3 gemini_enhance.py \
 
 # Translate to Turkish with Ottoman cultural touches
 python3 gemini_enhance.py \
-  --input-dir output/ios/ \
+  --input-dir output/en/ios/ \
   --output-dir output/tr/ios/ \
   --model nano-banana-pro \
   --translate-to "Turkish" \
@@ -198,7 +198,7 @@ python3 gemini_enhance.py \
 
 # Translate to Japanese with wabi-sabi aesthetic
 python3 gemini_enhance.py \
-  --input-dir output/ios/ \
+  --input-dir output/en/ios/ \
   --output-dir output/ja/ios/ \
   --model nano-banana-pro \
   --translate-to "Japanese" \
@@ -207,7 +207,7 @@ python3 gemini_enhance.py \
 
 # Tablet platforms — same pattern
 python3 gemini_enhance.py \
-  --input-dir output/ipad/ \
+  --input-dir output/en/ipad/ \
   --output-dir output/tr/ipad/ \
   --model nano-banana-pro \
   --translate-to "Turkish" \
@@ -215,7 +215,7 @@ python3 gemini_enhance.py \
 
 # Single file
 python3 gemini_enhance.py \
-  --input output/ios/en_01.png \
+  --input output/en/ios/en_01.png \
   --output output/tr/ios/tr_01.png \
   --model nano-banana-2 \
   --translate-to "Turkish" \
@@ -297,29 +297,36 @@ Regenerates all four frames in `assets/`. Only needed if you modify frame consta
 
 ```
 output/
-  ios/                  ← English phone (1320×2868)
-    en_01.png
-    en_02.png
-    ...
-  android/              ← English phone (1080×1920)
-    en_01.png
-    ...
-  ipad/                 ← English iPad Pro 13" (2064×2752)
-    en_01.png
-    ...
-  android_tablet/       ← English Android tablet (1600×2560)
-    en_01.png
-    ...
-  tr/
-    ios/                (tr_01.png … tr_0N.png — Turkish with Ottoman touches)
+  en/                         ← English (default / source language)
+    ios/                        (1320×2868)
+      en_01.png
+      en_02.png
+      ...
+    android/                    (1080×1920)
+      en_01.png
+      ...
+    ipad/                       (2064×2752)
+      en_01.png
+      ...
+    android_tablet/             (1600×2560)
+      en_01.png
+      ...
+  tr/                         ← Turkish (translated from en/)
+    ios/
+      tr_01.png
+      ...
     android/
     ipad/
     android_tablet/
-  de/
-    ios/                (de_01.png … — German with Bauhaus touches)
+  de/                         ← German
+    ios/
+      de_01.png
+      ...
     android/
     ...
-showcase.png            ← Side-by-side preview
+  ja/                         ← Japanese
+    ...
+showcase.png                  ← Side-by-side preview
 ```
 
 ## Screenshot Dimensions

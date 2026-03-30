@@ -189,7 +189,7 @@ python compose.py \
   --verb "{verb}" \
   --desc "{descriptor}" \
   --screenshot "{screenshot_path}" \
-  --output "output/ios/en_{n:02d}.png"
+  --output "output/en/ios/en_{n:02d}.png"
 
 # Android phone
 python compose.py \
@@ -198,7 +198,7 @@ python compose.py \
   --verb "{verb}" \
   --desc "{descriptor}" \
   --screenshot "{screenshot_path}" \
-  --output "output/android/en_{n:02d}.png"
+  --output "output/en/android/en_{n:02d}.png"
 
 # iPad Pro 13" (if tablet selected)
 python compose.py \
@@ -207,7 +207,7 @@ python compose.py \
   --verb "{verb}" \
   --desc "{descriptor}" \
   --screenshot "{screenshot_path_tablet}" \
-  --output "output/ipad/en_{n:02d}.png"
+  --output "output/en/ipad/en_{n:02d}.png"
 
 # Android tablet (if tablet selected)
 python compose.py \
@@ -216,7 +216,7 @@ python compose.py \
   --verb "{verb}" \
   --desc "{descriptor}" \
   --screenshot "{screenshot_path_tablet}" \
-  --output "output/android_tablet/en_{n:02d}.png"
+  --output "output/en/android_tablet/en_{n:02d}.png"
 ```
 
 **Note on tablet screenshots**: Tablet app screenshots should ideally be taken from the iPad/tablet simulator. If the user only has phone screenshots, they can still be used — compose.py will scale them to fit the device screen area.
@@ -224,22 +224,23 @@ python compose.py \
 ### Output directory structure
 ```
 output/
-  ios/
-    en_01.png  (1320×2868)
-    en_02.png
-    ...
-  android/
-    en_01.png  (1080×1920)
-    en_02.png
-    ...
-  ipad/               ← only if tablet selected
-    en_01.png  (2064×2752)
-    en_02.png
-    ...
-  android_tablet/     ← only if tablet selected
-    en_01.png  (1600×2560)
-    en_02.png
-    ...
+  en/                          ← default language (English)
+    ios/
+      en_01.png  (1320×2868)
+      en_02.png
+      ...
+    android/
+      en_01.png  (1080×1920)
+      en_02.png
+      ...
+    ipad/                      ← only if tablet selected
+      en_01.png  (2064×2752)
+      en_02.png
+      ...
+    android_tablet/            ← only if tablet selected
+      en_01.png  (1600×2560)
+      en_02.png
+      ...
 ```
 
 ### Composition review — REQUIRED before enhancement
@@ -286,8 +287,8 @@ After the user has approved all composed screenshots, run `gemini_enhance.py` to
 ```bash
 # Enhance a single screenshot with app context
 python3 gemini_enhance.py \
-  --input "output/ios/en_{n}.png" \
-  --output "output/ios/en_{n}.png" \
+  --input "output/en/ios/en_{n}.png" \
+  --output "output/en/ios/en_{n}.png" \
   --model "{gemini_model}" \
   --app-desc "{short app description}" \
   --bg-color "{brand_colour}" \
@@ -296,8 +297,8 @@ python3 gemini_enhance.py \
 
 # Batch enhance an entire directory (with --lang-code for proper naming)
 python3 gemini_enhance.py \
-  --input-dir output/ios/ \
-  --output-dir output/ios/ \
+  --input-dir output/en/ios/ \
+  --output-dir output/en/ios/ \
   --model "{gemini_model}" \
   --app-desc "{short app description}" \
   --bg-color "{brand_colour}" \
@@ -305,8 +306,8 @@ python3 gemini_enhance.py \
 
 # Tablet platforms use the same command with different directories
 python3 gemini_enhance.py \
-  --input-dir output/ipad/ \
-  --output-dir output/ipad/ \
+  --input-dir output/en/ipad/ \
+  --output-dir output/en/ipad/ \
   --model "{gemini_model}" \
   --app-desc "{short app description}" \
   --bg-color "{brand_colour}" \
@@ -346,8 +347,8 @@ data: { generated: [{ benefit_index, platform, output_path, status }] }
 ### Generate showcase preview
 ```bash
 python showcase.py \
-  --ios output/ios/screenshot_1.png output/ios/screenshot_2.png output/ios/screenshot_3.png \
-  --android output/android/screenshot_1.png output/android/screenshot_2.png output/android/screenshot_3.png \
+  --ios output/en/ios/en_01.png output/en/ios/en_02.png output/en/ios/en_03.png \
+  --android output/en/android/en_01.png output/en/android/en_02.png output/en/android/en_03.png \
   --output showcase.png
 ```
 
@@ -391,7 +392,7 @@ Always pass `--lang-code` so output files are named correctly (`tr_01.png`, `tr_
 ```bash
 # Translate all iOS phone screenshots to Turkish
 python3 gemini_enhance.py \
-  --input-dir output/ios/ \
+  --input-dir output/en/ios/ \
   --output-dir output/tr/ios/ \
   --model "{gemini_model}" \
   --translate-to "Turkish" \
@@ -399,7 +400,7 @@ python3 gemini_enhance.py \
 
 # Translate all Android phone screenshots to German
 python3 gemini_enhance.py \
-  --input-dir output/android/ \
+  --input-dir output/en/android/ \
   --output-dir output/de/android/ \
   --model "{gemini_model}" \
   --translate-to "German" \
@@ -407,7 +408,7 @@ python3 gemini_enhance.py \
 
 # Translate iPad screenshots (same pattern)
 python3 gemini_enhance.py \
-  --input-dir output/ipad/ \
+  --input-dir output/en/ipad/ \
   --output-dir output/tr/ipad/ \
   --model "{gemini_model}" \
   --translate-to "Turkish" \
@@ -415,7 +416,7 @@ python3 gemini_enhance.py \
 
 # Translate Android tablet screenshots
 python3 gemini_enhance.py \
-  --input-dir output/android_tablet/ \
+  --input-dir output/en/android_tablet/ \
   --output-dir output/tr/android_tablet/ \
   --model "{gemini_model}" \
   --translate-to "Turkish" \
@@ -426,7 +427,7 @@ python3 gemini_enhance.py \
 
 ```bash
 python3 gemini_enhance.py \
-  --input output/ios/en_01.png \
+  --input output/en/ios/en_01.png \
   --output output/tr/ios/tr_01.png \
   --model "{gemini_model}" \
   --translate-to "Turkish" \
@@ -435,24 +436,25 @@ python3 gemini_enhance.py \
 
 ### Batch translate multiple languages
 
-Run once per target language. Output structure:
+Run once per target language. Always source from `output/en/`. Output structure:
 
 ```
 output/
-  ios/               ← English phone (en_01.png … en_0N.png)
-  android/           ← English phone
-  ipad/              ← English tablet (if generated)
-  android_tablet/    ← English tablet (if generated)
-  tr/
+  en/                          ← default English (source for all translations)
+    ios/             (en_01.png … en_0N.png)
+    android/
+    ipad/
+    android_tablet/
+  tr/                          ← Turkish
     ios/             (tr_01.png … tr_0N.png)
     android/
     ipad/
     android_tablet/
-  de/
+  de/                          ← German
     ios/
     android/
     ...
-  ja/
+  ja/                          ← Japanese
     ios/
     android/
     ...
