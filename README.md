@@ -23,6 +23,8 @@ Generate high-converting App Store & Google Play screenshots with device frames,
 
 ## Installation
 
+### 1. Clone and install dependencies
+
 ```bash
 # Clone the repo
 git clone https://github.com/abutun/claude-skill-aso-cosmicmeta-ss.git
@@ -30,8 +32,22 @@ cd claude-skill-aso-cosmicmeta-ss
 
 # Install the Python dependency
 pip3 install Pillow
+```
 
-# Generate the device frame assets (only needed once)
+### 2. Install the font
+
+The skill uses **SF Pro Display Black** for headline text. On macOS, download and install it from [Apple's developer fonts](https://developer.apple.com/fonts/). The expected path after installation is:
+
+```
+/Library/Fonts/SF-Pro-Display-Black.otf
+```
+
+If SF Pro is not available, the script falls back to other system fonts (Helvetica on macOS, DejaVu Sans on Linux), but SF Pro Display Black is strongly recommended for the best visual results.
+
+### 3. Generate device frames
+
+```bash
+# Only needed once (or after modifying frame constants)
 python3 generate_frame.py
 ```
 
