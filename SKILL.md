@@ -242,21 +242,46 @@ output/
     ...
 ```
 
-### Quality check after generation
-1. Open each generated screenshot and verify:
+### Composition review — REQUIRED before enhancement
+
+**STOP HERE. Do not proceed to Gemini enhancement until the user has reviewed and approved.**
+
+After all compose.py commands have run, open each composed screenshot and present them to the user:
+
+1. Display every composed output file inline so the user can see them
+2. Run a quick automated check on each:
    - Text is readable and properly centered
    - Device frame is correctly positioned
    - Screenshot content is visible and well-framed
    - No clipping of important content
-2. If any screenshot has issues, regenerate with adjustments
+3. Present a clear summary table:
+
+| # | File | Text | Frame | Content | Status |
+|---|------|------|-------|---------|--------|
+| 1 | en_01.png | ✓ | ✓ | ✓ | Ready |
+| 2 | en_02.png | ✓ | ✓ | ✓ | Ready |
+| … | … | … | … | … | … |
+
+4. **Ask the user explicitly:**
+   > "These are your composed screenshots before AI enhancement. Everything look good? Any text, layout, or content issues to fix before I send them to Gemini?"
+
+5. **Wait for approval.** If the user requests changes:
+   - Adjust the relevant `compose.py` command (verb, desc, bg colour, screenshot path)
+   - Regenerate only the affected screenshots
+   - Show the updated files and ask again
+   - Repeat until the user confirms all screenshots are approved
+
+6. Only after explicit approval, proceed to AI enhancement below.
+
+> **Why this step matters**: Gemini enhancement is irreversible and consumes API quota. Catching layout or text issues at the compose stage (free, instant) is always better than discovering them after enhancement.
 
 ### Consistency
 - The first approved screenshot sets the visual tone for the set
 - All screenshots must use the same brand colour, font sizing pattern, and layout style
 - Maintain visual rhythm across the set — they should look like a cohesive collection
 
-### AI Enhancement with Gemini (Required)
-After composing, run `gemini_enhance.py` on each generated screenshot to produce the final polished output. This is the critical step that transforms plain mockups into premium, high-converting visuals.
+### AI Enhancement with Gemini (Required — only after user approval above)
+After the user has approved all composed screenshots, run `gemini_enhance.py` to produce the final polished output. This is the critical step that transforms plain mockups into premium, high-converting visuals.
 
 ```bash
 # Enhance a single screenshot with app context
