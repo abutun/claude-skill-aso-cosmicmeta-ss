@@ -68,6 +68,12 @@ MODEL_ALIASES = {
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
+
+class GeminiQuotaExceededError(Exception):
+    """Raised when the Gemini API returns a 429 quota/rate-limit error."""
+    def __init__(self, message="Gemini API quota exceeded (429)."):
+        super().__init__(message)
+
 TRANSLATION_PROMPT_TEMPLATE = (
     "TRANSLATION TASK: This is an English app store screenshot. "
     "Translate ALL visible text into {language}.\n\n"
@@ -432,6 +438,11 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
             result = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8") if e.fp else ""
+        if e.code == 429:
+            raise GeminiQuotaExceededError(
+                f"Gemini API quota exceeded (429). "
+                f"Details: {error_body[:300]}"
+            )
         print(f"  Gemini API error ({e.code}): {error_body[:200]}")
         return False
     except urllib.error.URLError as e:
@@ -485,7 +496,8 @@ def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
         return
 
     action = f"Translating to {translate_to}" if translate_to else f"Enhancing with {model}"
-    print(f"  {action} — {len(png_files)} screenshots...")
+    total = len(png_files)
+    print(f"  {action} — {total} screenshots...")
     success = 0
     for i, img_file in enumerate(png_files):
         if lang_code:
@@ -493,14 +505,36 @@ def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
         else:
             out_name = img_file.name
         out_file = output_path / out_name
-        if enhance_with_gemini(
-            str(img_file), str(out_file), api_key, model, prompt,
-            app_desc=app_desc, bg_color=bg_color, index=i,
-            translate_to=translate_to, lang_code=lang_code,
-        ):
-            success += 1
+        try:
+            if enhance_with_gemini(
+                str(img_file), str(out_file), api_key, model, prompt,
+                app_desc=app_desc, bg_color=bg_color, index=i,
+                translate_to=translate_to, lang_code=lang_code,
+            ):
+                success += 1
+        except GeminiQuotaExceededError:
+            remaining = total - success
+            print()
+            print("  ╔══════════════════════════════════════════════════════╗")
+            print("  ║           ⚠️  GEMINI API QUOTA EXCEEDED              ║")
+            print("  ╠══════════════════════════════════════════════════════╣")
+            print(f"  ║  Completed : {success}/{total} screenshots                        ")
+            print(f"  ║  Remaining : {remaining} screenshot(s) not processed             ")
+            print(f"  ║  Stopped at: {img_file.name:<40}  ")
+            print("  ╠══════════════════════════════════════════════════════╣")
+            print("  ║  The Gemini API free-tier quota resets every minute  ║")
+            print("  ║  or daily depending on your plan.                    ║")
+            print("  ║                                                      ║")
+            print("  ║  To resume from where you left off, re-run with      ║")
+            print(f"  ║  --input-dir pointing to the same source folder and  ║")
+            print("  ║  --output-dir pointing to the same destination —     ║")
+            print("  ║  already-processed files will be overwritten but     ║")
+            print("  ║  the batch will complete the remaining ones.         ║")
+            print("  ╚══════════════════════════════════════════════════════╝")
+            print()
+            return
 
-    print(f"  Done: {success}/{len(png_files)} processed successfully.")
+    print(f"  Done: {success}/{total} processed successfully.")
 
 
 def main():
@@ -612,12 +646,23 @@ Examples:
         print("Error: --input and --output required (or use --input-dir/--output-dir)")
         sys.exit(1)
 
-    enhance_with_gemini(
-        args.input, args.output, api_key, args.model, args.prompt,
-        args.platform, args.app_desc, args.bg_color, args.index,
-        translate_to=args.translate_to,
-        lang_code=args.lang_code,
-    )
+    try:
+        enhance_with_gemini(
+            args.input, args.output, api_key, args.model, args.prompt,
+            args.platform, args.app_desc, args.bg_color, args.index,
+            translate_to=args.translate_to,
+            lang_code=args.lang_code,
+        )
+    except GeminiQuotaExceededError:
+        print()
+        print("  ╔══════════════════════════════════════════════════════╗")
+        print("  ║           ⚠️  GEMINI API QUOTA EXCEEDED              ║")
+        print("  ╠══════════════════════════════════════════════════════╣")
+        print("  ║  The Gemini API quota has been exhausted.            ║")
+        print("  ║  Wait for your quota to reset, then retry.           ║")
+        print("  ╚══════════════════════════════════════════════════════╝")
+        print()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
