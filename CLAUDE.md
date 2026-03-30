@@ -9,6 +9,8 @@ This skill generates high-converting App Store and Google Play screenshots with 
 - `generate_frame.py` — Device frame generator (iPhone + Android/Pixel)
 - `gemini_enhance.py` — AI enhancement via Gemini (nano-banana-pro / nano-banana-2)
 - `showcase.py` — Preview gallery generator (side-by-side comparison)
+- `update.py` — Version check and auto-update script
+- `VERSION` — Current version number
 - `assets/` — Generated device frame PNGs
 
 ## Key Rules

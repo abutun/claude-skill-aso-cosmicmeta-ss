@@ -282,6 +282,25 @@ showcase.png            # Side-by-side preview of all screenshots
 
 These are the exact dimensions required by App Store Connect and Google Play Console for phone screenshots.
 
+## Updating
+
+The skill checks for updates automatically at the start of each run. You can also check manually:
+
+```bash
+# Check if a new version is available
+python3 update.py --check
+
+# Update to the latest version
+python3 update.py --update
+
+# Show current version
+python3 update.py --version
+```
+
+If the skill was installed via `git clone`, the update script uses `git pull`. If it was copied manually into `~/.claude/skills/`, it will provide instructions to re-download.
+
+After updating, device frames are automatically regenerated.
+
 ## Uploading to Stores
 
 ### Apple App Store Connect

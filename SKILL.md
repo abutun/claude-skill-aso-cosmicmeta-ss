@@ -16,8 +16,20 @@ Generate 6-8 polished, high-converting App Store and Google Play screenshots wit
 
 ## Phase 1 — Configuration & Recall
 
+### Version check
+Before anything else, check if a newer version of this skill is available:
+
+```bash
+python3 update.py --check
+```
+
+If a new version is available, inform the user and suggest updating:
+```bash
+python3 update.py --update
+```
+
 ### Check for saved progress
-Before starting, check Claude Code memory for any saved progress on this project:
+Check Claude Code memory for any saved progress on this project:
 - Look for memory entries related to "aso-screenshots", "store-screenshots", or the project name
 - If found, present status of completed phases and ask whether to resume or start fresh
 
