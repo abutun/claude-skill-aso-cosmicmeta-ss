@@ -78,11 +78,37 @@ Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
 
 Add this repo as a skill in Claude Code and let the guided workflow handle everything.
 
-**Setup:**
+**Install the skill using one of these methods:**
 
-1. Open Claude Code in your app's project directory
-2. Run `/skills:add` and point it to this repo (or add the path to your `.claude/skills/` config)
-3. Trigger the skill by asking Claude to generate store screenshots
+**Method 1 — Using `npx add-skill` CLI (easiest):**
+
+```bash
+npx add-skill abutun/claude-skill-aso-cosmicmeta-ss
+```
+
+Select the installation scope when prompted:
+- **Personal** (available across all projects): installs to `~/.claude/skills/`
+- **Project-specific** (current repo only): installs to `.claude/skills/`
+
+**Method 2 — Manual installation:**
+
+```bash
+# Clone the repo
+git clone https://github.com/abutun/claude-skill-aso-cosmicmeta-ss.git
+
+# For personal use (available across all projects)
+cp -r claude-skill-aso-cosmicmeta-ss ~/.claude/skills/
+
+# OR for project-specific use (current repo only)
+cp -r claude-skill-aso-cosmicmeta-ss .claude/skills/
+```
+
+> **Note:** The `SKILL.md` file must be directly inside the skill folder, not nested in an extra level of directories.
+
+**After installation:**
+
+1. Restart your Claude Code session to ensure the new skill is detected and loaded
+2. Verify by typing `/` followed by the skill name, or ask Claude to generate store screenshots
 
 **The skill walks through 5 phases:**
 
