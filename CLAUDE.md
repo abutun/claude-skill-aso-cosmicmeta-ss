@@ -5,7 +5,7 @@ This skill generates high-converting App Store and Google Play screenshots with 
 ## Architecture
 
 - `SKILL.md` — Main workflow definition (5 phases)
-- `compose.py` — Screenshot compositor (supports iOS 1290x2796 and Android 1080x1920)
+- `compose.py` — Screenshot compositor (supports iOS 1320x2868 and Android 1080x1920)
 - `generate_frame.py` — Device frame generator (iPhone + Android/Pixel)
 - `gemini_enhance.py` — AI enhancement via Gemini (nano-banana-pro / nano-banana-2)
 - `showcase.py` — Preview gallery generator (side-by-side comparison)

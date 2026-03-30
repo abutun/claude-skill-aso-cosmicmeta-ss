@@ -3,7 +3,7 @@
 Generate device frame templates for iPhone and Android (Pixel-style).
 
 Output:
-  assets/iphone_frame.png   — iPhone 15 Pro-style frame (1030×2800)
+  assets/iphone_frame.png   — iPhone 16 Pro Max-style frame (1054×2870)
   assets/android_frame.png  — Pixel-style frame (900×1980)
 
 compose.py positions these dynamically based on text height.
@@ -14,14 +14,14 @@ from PIL import Image, ImageDraw, ImageChops
 
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 
-# ─── iPhone Frame Constants ─────────────────────────────────────────
-IPHONE_W = 1030
-IPHONE_H = 2800
-IPHONE_CORNER_R = 77
+# ─── iPhone Frame Constants (6.9" — iPhone 16 Pro Max) ─────────────
+IPHONE_W = 1054
+IPHONE_H = 2870
+IPHONE_CORNER_R = 80
 IPHONE_BEZEL = 15
-IPHONE_SCREEN_CORNER_R = 62
-IPHONE_DI_W = 130
-IPHONE_DI_H = 38
+IPHONE_SCREEN_CORNER_R = 65
+IPHONE_DI_W = 135
+IPHONE_DI_H = 40
 IPHONE_DI_TOP = 14
 IPHONE_SCREEN_W = IPHONE_W - 2 * IPHONE_BEZEL
 IPHONE_SCREEN_H = IPHONE_H - 2 * IPHONE_BEZEL
@@ -39,7 +39,7 @@ ANDROID_SCREEN_H = ANDROID_H - 2 * ANDROID_BEZEL
 
 
 def generate_iphone():
-    """Generate iPhone 15 Pro-style device frame with Dynamic Island."""
+    """Generate iPhone 16 Pro Max-style device frame with Dynamic Island."""
     frame = Image.new("RGBA", (IPHONE_W, IPHONE_H), (0, 0, 0, 0))
     fd = ImageDraw.Draw(frame)
 

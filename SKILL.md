@@ -9,7 +9,7 @@ trigger: When users want to create app store screenshots, app listing visuals, o
 Generate 6-8 polished, high-converting App Store and Google Play screenshots with device frames, benefit-driven headlines, and multi-language support. Produces pixel-perfect images for both platforms simultaneously.
 
 **Output dimensions:**
-- iOS (Apple App Store): 1290 × 2796 px (iPhone 6.7")
+- iOS (Apple App Store): 1320 × 2868 px (iPhone 6.9" / 16 Pro Max)
 - Android (Google Play): 1080 × 1920 px (standard phone)
 
 ---
@@ -46,19 +46,19 @@ Ask the user for the following configuration. Present as a clean checklist:
    - If not provided, attempt to auto-detect from codebase (look for theme colors, brand constants, primary colors in the project)
    - If no codebase available, ask the user
 
-6. **Gemini AI Enhancement** (Optional) — Use Gemini to polish screenshots with AI
-   - **Enable/disable**: Whether to use Gemini AI for enhancement (default: disabled)
-   - **Model**: Which Gemini model to use
-     - `nano-banana-pro` — Higher quality, slower (recommended)
-     - `nano-banana-2` — Faster, good quality
-   - **API key**: Gemini API key for authentication
+6. **Gemini AI Model** (Required) — All screenshots are enhanced with Gemini AI
+   - **Model**: Which Gemini model to use (must pick one)
+     - `nano-banana-pro` — Higher quality, slower (recommended for final output)
+     - `nano-banana-2` — Faster, good quality (recommended for iteration)
+   - **API key**: Gemini API key for authentication (required)
      - Can be provided directly, via `GEMINI_API_KEY` environment variable, or saved to `.gemini_config.json`
      - To save the key for future use: `python3 gemini_enhance.py --save-key "YOUR_KEY"`
+   - **IMPORTANT**: The workflow will not proceed without a valid Gemini API key and model selection
 
 Save all configuration to memory:
 ```
 memory_key: aso-screenshots-config
-data: { platforms, count, language, source_mode, brand_colour, project_name, gemini_enabled, gemini_model, gemini_api_key_configured }
+data: { platforms, count, language, source_mode, brand_colour, project_name, gemini_model, gemini_api_key_configured }
 ```
 
 ---
@@ -125,7 +125,7 @@ data: { benefits: [{ verb, descriptor, order }], language }
 
 ### Quality check
 For each screenshot, verify:
-- Resolution is sufficient (warn if below 1170px wide for iOS or 1080px for Android)
+- Resolution is sufficient (warn if below 1320px wide for iOS or 1080px for Android)
 - Content is appropriate (no placeholder/debug data)
 - Screen shows a compelling state of the feature
 
@@ -178,7 +178,7 @@ python compose.py \
 ```
 output/
   ios/
-    screenshot_1.png  (1290x2796)
+    screenshot_1.png  (1320x2868)
     screenshot_2.png
     ...
   android/
@@ -200,8 +200,8 @@ output/
 - All screenshots must use the same brand colour, font sizing pattern, and layout style
 - Maintain visual rhythm across the set — they should look like a cohesive collection
 
-### AI Enhancement with Gemini (Optional)
-If Gemini enhancement was enabled in Phase 1, run `gemini_enhance.py` on each generated screenshot:
+### AI Enhancement with Gemini (Required)
+After composing, run `gemini_enhance.py` on each generated screenshot to produce the final polished output:
 
 ```bash
 # Enhance a single screenshot
@@ -259,7 +259,7 @@ python showcase.py \
 **For Apple App Store Connect:**
 - Navigate to your app > App Store tab > Screenshots section
 - Upload each iOS screenshot in order (screenshot_1 through screenshot_N)
-- Select "iPhone 6.7-inch Display" as the device type
+- Select "iPhone 6.9-inch Display" as the device type
 
 **For Google Play Console:**
 - Navigate to your app > Store listing > Phone screenshots
@@ -294,8 +294,8 @@ python showcase.py \
 - Subtle gradient overlay adds depth (can be disabled with --no-gradient)
 
 ### Typography
-- Action verbs: Maximum impact, largest possible size (150-256pt for iOS, 120-200pt for Android)
-- Descriptors: Supporting text, slightly smaller (124pt iOS, 96pt Android)
+- Action verbs: Maximum impact, largest possible size (150-260pt for iOS, 120-200pt for Android)
+- Descriptors: Supporting text, slightly smaller (128pt iOS, 96pt Android)
 - All text is uppercase for maximum store shelf impact
 - Font: SF Pro Display Black (macOS) with fallbacks for other systems
 

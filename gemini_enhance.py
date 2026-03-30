@@ -11,7 +11,7 @@ Supported models:
   - nano-banana-2    (faster, good quality)
 
 Usage:
-  # Enhance a single screenshot
+  # Enhance a single screenshot (model is required)
   python gemini_enhance.py \
     --input output/ios/screenshot_1.png \
     --output output/ios/screenshot_1_enhanced.png \
@@ -22,18 +22,20 @@ Usage:
   export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
   python gemini_enhance.py \
     --input output/ios/screenshot_1.png \
-    --output output/ios/screenshot_1_enhanced.png
+    --output output/ios/screenshot_1_enhanced.png \
+    --model nano-banana-2
 
   # Batch enhance all screenshots in a directory
   python gemini_enhance.py \
     --input-dir output/ios/ \
     --output-dir output/ios/enhanced/ \
-    --model nano-banana-2
+    --model nano-banana-pro
 
   # Enhance with custom prompt
   python gemini_enhance.py \
     --input screenshot.png \
     --output enhanced.png \
+    --model nano-banana-pro \
     --prompt "Add subtle glass reflection on the device screen and warm lighting"
 """
 
@@ -70,7 +72,7 @@ DEFAULT_ENHANCE_PROMPT = (
 # ─── Store dimensions for final crop ────────────────────────────────
 
 PLATFORM_DIMS = {
-    "ios": (1290, 2796),
+    "ios": (1320, 2868),
     "android": (1080, 1920),
 }
 
@@ -263,9 +265,9 @@ Examples:
     p.add_argument("--output-dir", help="Output directory for batch enhancement")
     p.add_argument(
         "--model",
-        default=DEFAULT_MODEL,
+        required=True,
         choices=SUPPORTED_MODELS,
-        help=f"Gemini model to use (default: {DEFAULT_MODEL})",
+        help="Gemini model to use: nano-banana-pro (higher quality) or nano-banana-2 (faster)",
     )
     p.add_argument("--api-key", help="Gemini API key (or set GEMINI_API_KEY env var)")
     p.add_argument("--save-key", help="Save API key to .gemini_config.json")

@@ -6,7 +6,7 @@ Composites headline text, device frame template, and app screenshot
 into pixel-perfect store-ready images.
 
 Supports:
-  - iOS (Apple App Store): 1290x2796 px  (6.7" iPhone)
+  - iOS (Apple App Store): 1320x2868 px  (6.9" iPhone 16 Pro Max)
   - Android (Google Play): 1080x1920 px  (standard phone)
 
 Usage:
@@ -25,16 +25,16 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 PLATFORMS = {
     "ios": {
-        "canvas_w": 1290,
-        "canvas_h": 2796,
-        "device_w": 1030,
+        "canvas_w": 1320,
+        "canvas_h": 2868,
+        "device_w": 1054,
         "bezel": 15,
-        "screen_corner_r": 62,
-        "device_y": 720,
+        "screen_corner_r": 65,
+        "device_y": 740,
         "text_top": 200,
-        "verb_size_max": 256,
+        "verb_size_max": 260,
         "verb_size_min": 150,
-        "desc_size": 124,
+        "desc_size": 128,
         "frame_file": "iphone_frame.png",
     },
     "android": {

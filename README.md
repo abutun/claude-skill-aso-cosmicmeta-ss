@@ -4,14 +4,14 @@ Generate high-converting App Store & Google Play screenshots with device frames,
 
 ## Features
 
-- **Dual platform** — iOS (1290x2796) and Android (1080x1920) output in one workflow
+- **Dual platform** — iOS (1320x2868) and Android (1080x1920) output in one workflow
 - **6-8 screenshots** per platform with benefit-driven action headlines
 - **Multi-language** — Headlines in any language (English, Turkish, Spanish, German, Japanese, etc.)
 - **Manual or auto** — Provide your own screenshots or capture from simulator
-- **Device frames** — Realistic iPhone 15 Pro and Pixel-style Android frames with Dynamic Island / punch-hole camera
+- **Device frames** — Realistic iPhone 16 Pro Max and Pixel-style Android frames with Dynamic Island / punch-hole camera
 - **High CTR design** — Action verbs, visual hierarchy, bold brand colours, subtle gradients
 - **Smart text colour** — Automatically picks white or dark text based on background luminance
-- **Gemini AI enhancement** — Optional polish with `nano-banana-pro` or `nano-banana-2` models for professional-grade output
+- **Gemini AI enhancement** — All screenshots are polished with `nano-banana-pro` or `nano-banana-2` models for professional-grade output
 - **No paywall rule** — Enforced throughout the workflow (never includes subscription/IAP screens)
 
 ## Requirements
@@ -19,7 +19,7 @@ Generate high-converting App Store & Google Play screenshots with device frames,
 - Python 3.8+
 - [Pillow](https://python-pillow.org/) (PIL fork)
 - macOS recommended (uses SF Pro Display font; falls back to system fonts on Linux)
-- [Gemini API key](https://aistudio.google.com/apikey) (optional, for AI enhancement)
+- [Gemini API key](https://aistudio.google.com/apikey) (required for AI enhancement)
 
 ## Installation
 
@@ -36,12 +36,12 @@ python3 generate_frame.py
 ```
 
 This creates two frame PNGs in `assets/`:
-- `iphone_frame.png` (1030x2800 — iPhone 15 Pro style)
+- `iphone_frame.png` (1054x2870 — iPhone 16 Pro Max style)
 - `android_frame.png` (900x1980 — Pixel style)
 
-### Gemini API Key (Optional)
+### Gemini API Key (Required)
 
-If you want AI-powered screenshot enhancement, set up your Gemini API key:
+All screenshots are enhanced with Gemini AI. Set up your API key before generating:
 
 ```bash
 # Option 1: Environment variable
@@ -72,10 +72,10 @@ Add this repo as a skill in Claude Code and let the guided workflow handle every
 
 | Phase | What happens |
 |-------|-------------|
-| **1. Configuration** | Choose platforms (iOS/Android/both), screenshot count (6 or 8), language, screenshot source (manual or auto), brand colour, and Gemini AI model/key |
+| **1. Configuration** | Choose platforms, screenshot count (6 or 8), language, screenshot source, brand colour, Gemini model (`nano-banana-pro` or `nano-banana-2`), and API key |
 | **2. Benefit Discovery** | Analyzes your codebase (or asks you) to identify core value propositions and craft action-verb headlines |
 | **3. Screenshot Pairing** | Matches your app screenshots to benefits, assesses quality, enforces the no-paywall rule |
-| **4. Generation** | Runs `compose.py` for each benefit-screenshot pair on each platform, optionally enhances with Gemini AI, verifies output quality |
+| **4. Generation** | Runs `compose.py` for each benefit-screenshot pair, enhances with Gemini AI, verifies output quality |
 | **5. Showcase** | Generates a side-by-side preview and provides upload instructions for App Store Connect and Google Play Console |
 
 **Example interaction:**
@@ -169,7 +169,7 @@ python3 gemini_enhance.py \
 | `--output` | Yes* | Output enhanced screenshot path |
 | `--input-dir` | Yes* | Input directory for batch mode |
 | `--output-dir` | Yes* | Output directory for batch mode |
-| `--model` | No | `nano-banana-pro` (default, higher quality) or `nano-banana-2` (faster) |
+| `--model` | Yes | `nano-banana-pro` (higher quality) or `nano-banana-2` (faster) |
 | `--api-key` | No | Gemini API key (or use `GEMINI_API_KEY` env var / `.gemini_config.json`) |
 | `--save-key` | No | Save API key to `.gemini_config.json` for future use |
 | `--prompt` | No | Custom enhancement prompt (overrides default) |
@@ -212,7 +212,7 @@ Overwrites `assets/iphone_frame.png` and `assets/android_frame.png`. Only needed
 ```
 output/
   ios/
-    screenshot_1.png    # 1290 x 2796 px
+    screenshot_1.png    # 1320 x 2868 px
     screenshot_2.png
     screenshot_3.png
     ...
@@ -228,7 +228,7 @@ showcase.png            # Side-by-side preview of all screenshots
 
 | Platform | Width | Height | Device |
 |----------|-------|--------|--------|
-| iOS (App Store) | 1290 | 2796 | iPhone 6.7" (15 Pro Max) |
+| iOS (App Store) | 1320 | 2868 | iPhone 6.9" (16 Pro Max) |
 | Android (Google Play) | 1080 | 1920 | Standard phone |
 
 These are the exact dimensions required by App Store Connect and Google Play Console for phone screenshots.
@@ -238,7 +238,7 @@ These are the exact dimensions required by App Store Connect and Google Play Con
 ### Apple App Store Connect
 1. Go to **My Apps** > your app > **App Store** tab
 2. Scroll to **Screenshots** section
-3. Select **iPhone 6.7-inch Display**
+3. Select **iPhone 6.9-inch Display**
 4. Upload the iOS screenshots in order (`screenshot_1.png` through `screenshot_N.png`)
 
 ### Google Play Console
