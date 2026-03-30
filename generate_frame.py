@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-Generate device frame templates for iPhone and Android (Pixel-style).
+Generate device frame templates for iPhone, iPad Pro 13", Android (Pixel-style),
+and Android tablet.
 
 Output:
-  assets/iphone_frame.png   — iPhone 16 Pro Max-style frame (1054×2870)
-  assets/android_frame.png  — Pixel-style frame (900×1980)
+  assets/iphone_frame.png          — iPhone 16 Pro Max-style frame (1054×2870)
+  assets/android_frame.png         — Pixel-style frame (900×1980)
+  assets/ipad_frame.png            — iPad Pro 13"-style frame (1600×2400)
+  assets/android_tablet_frame.png  — Android tablet frame (1280×2200)
 
 compose.py positions these dynamically based on text height.
 """
@@ -36,6 +39,28 @@ ANDROID_PUNCH_R = 16
 ANDROID_PUNCH_TOP = 20
 ANDROID_SCREEN_W = ANDROID_W - 2 * ANDROID_BEZEL
 ANDROID_SCREEN_H = ANDROID_H - 2 * ANDROID_BEZEL
+
+# ─── iPad Pro 13" Frame Constants ───────────────────────────────────
+IPAD_W = 1600
+IPAD_H = 2400
+IPAD_CORNER_R = 110
+IPAD_BEZEL = 26
+IPAD_SCREEN_CORNER_R = 84
+IPAD_CAM_R = 14        # Front camera circle radius
+IPAD_CAM_TOP = 22      # Distance from top of screen area to camera center
+IPAD_SCREEN_W = IPAD_W - 2 * IPAD_BEZEL
+IPAD_SCREEN_H = IPAD_H - 2 * IPAD_BEZEL
+
+# ─── Android Tablet Frame Constants ─────────────────────────────────
+ANDROID_TABLET_W = 1280
+ANDROID_TABLET_H = 2200
+ANDROID_TABLET_CORNER_R = 80
+ANDROID_TABLET_BEZEL = 20
+ANDROID_TABLET_SCREEN_CORNER_R = 60
+ANDROID_TABLET_PUNCH_R = 18
+ANDROID_TABLET_PUNCH_TOP = 24
+ANDROID_TABLET_SCREEN_W = ANDROID_TABLET_W - 2 * ANDROID_TABLET_BEZEL
+ANDROID_TABLET_SCREEN_H = ANDROID_TABLET_H - 2 * ANDROID_TABLET_BEZEL
 
 
 def generate_iphone():
@@ -218,9 +243,188 @@ def generate_android():
     return out
 
 
+def generate_ipad():
+    """Generate iPad Pro 13"-style device frame with centered front camera."""
+    frame = Image.new("RGBA", (IPAD_W, IPAD_H), (0, 0, 0, 0))
+    fd = ImageDraw.Draw(frame)
+
+    # ── Aluminium outer shell — 3-layer depth ───────────────────────
+    fd.rounded_rectangle(
+        [0, 0, IPAD_W - 1, IPAD_H - 1],
+        radius=IPAD_CORNER_R,
+        fill=(80, 80, 84, 255),
+    )
+    fd.rounded_rectangle(
+        [2, 2, IPAD_W - 3, IPAD_H - 3],
+        radius=IPAD_CORNER_R - 2,
+        fill=(62, 62, 66, 255),
+    )
+    fd.rounded_rectangle(
+        [4, 4, IPAD_W - 5, IPAD_H - 5],
+        radius=IPAD_CORNER_R - 4,
+        fill=(40, 40, 44, 255),
+    )
+
+    # ── Screen cutout (transparent) ─────────────────────────────────
+    screen_x = IPAD_BEZEL
+    screen_y = IPAD_BEZEL
+    cutout = Image.new("L", (IPAD_W, IPAD_H), 255)
+    ImageDraw.Draw(cutout).rounded_rectangle(
+        [screen_x, screen_y, screen_x + IPAD_SCREEN_W, screen_y + IPAD_SCREEN_H],
+        radius=IPAD_SCREEN_CORNER_R,
+        fill=0,
+    )
+    frame.putalpha(ImageChops.multiply(frame.getchannel("A"), cutout))
+
+    # ── Front camera — small centered circle at top of screen ───────
+    fd2 = ImageDraw.Draw(frame)
+    cam_x = IPAD_W // 2
+    cam_y = screen_y + IPAD_CAM_TOP + IPAD_CAM_R
+    # Outer ring
+    fd2.ellipse(
+        [cam_x - IPAD_CAM_R - 3, cam_y - IPAD_CAM_R - 3,
+         cam_x + IPAD_CAM_R + 3, cam_y + IPAD_CAM_R + 3],
+        fill=(22, 22, 24, 200),
+    )
+    # Camera body
+    fd2.ellipse(
+        [cam_x - IPAD_CAM_R, cam_y - IPAD_CAM_R,
+         cam_x + IPAD_CAM_R, cam_y + IPAD_CAM_R],
+        fill=(10, 10, 12, 255),
+    )
+    # Lens highlight
+    fd2.ellipse(
+        [cam_x - 5, cam_y - 6, cam_x + 5, cam_y + 4],
+        fill=(30, 30, 36, 255),
+    )
+
+    # ── Side buttons — right edge ────────────────────────────────────
+    btn_outer = (72, 72, 76, 255)
+    btn_inner = (52, 52, 56, 255)
+
+    # Power button — right edge, near top
+    fd2.rounded_rectangle(
+        [IPAD_W - 1, 200, IPAD_W + 6, 310], radius=3, fill=btn_outer
+    )
+    fd2.rounded_rectangle(
+        [IPAD_W, 202, IPAD_W + 5, 308], radius=2, fill=btn_inner
+    )
+    # Volume up — right edge
+    fd2.rounded_rectangle(
+        [IPAD_W - 1, 400, IPAD_W + 6, 510], radius=3, fill=btn_outer
+    )
+    fd2.rounded_rectangle(
+        [IPAD_W, 402, IPAD_W + 5, 508], radius=2, fill=btn_inner
+    )
+    # Volume down — right edge
+    fd2.rounded_rectangle(
+        [IPAD_W - 1, 540, IPAD_W + 6, 650], radius=3, fill=btn_outer
+    )
+    fd2.rounded_rectangle(
+        [IPAD_W, 542, IPAD_W + 5, 648], radius=2, fill=btn_inner
+    )
+
+    out = os.path.join(ASSETS_DIR, "ipad_frame.png")
+    frame.save(out, "PNG")
+    print(f"  iPad Pro 13\" frame: {out} ({IPAD_W}x{IPAD_H})")
+    return out
+
+
+def generate_android_tablet():
+    """Generate Android tablet frame (10" Pixel Tablet-style) with punch-hole camera."""
+    frame = Image.new("RGBA", (ANDROID_TABLET_W, ANDROID_TABLET_H), (0, 0, 0, 0))
+    fd = ImageDraw.Draw(frame)
+
+    # ── Device body — 3-layer depth ─────────────────────────────────
+    fd.rounded_rectangle(
+        [0, 0, ANDROID_TABLET_W - 1, ANDROID_TABLET_H - 1],
+        radius=ANDROID_TABLET_CORNER_R,
+        fill=(52, 52, 54, 255),
+    )
+    fd.rounded_rectangle(
+        [2, 2, ANDROID_TABLET_W - 3, ANDROID_TABLET_H - 3],
+        radius=ANDROID_TABLET_CORNER_R - 2,
+        fill=(36, 36, 38, 255),
+    )
+    fd.rounded_rectangle(
+        [3, 3, ANDROID_TABLET_W - 4, ANDROID_TABLET_H - 4],
+        radius=ANDROID_TABLET_CORNER_R - 3,
+        fill=(22, 22, 24, 255),
+    )
+
+    # ── Screen cutout (transparent) ─────────────────────────────────
+    screen_x = ANDROID_TABLET_BEZEL
+    screen_y = ANDROID_TABLET_BEZEL
+    cutout = Image.new("L", (ANDROID_TABLET_W, ANDROID_TABLET_H), 255)
+    ImageDraw.Draw(cutout).rounded_rectangle(
+        [screen_x, screen_y,
+         screen_x + ANDROID_TABLET_SCREEN_W,
+         screen_y + ANDROID_TABLET_SCREEN_H],
+        radius=ANDROID_TABLET_SCREEN_CORNER_R,
+        fill=0,
+    )
+    frame.putalpha(ImageChops.multiply(frame.getchannel("A"), cutout))
+
+    # ── Punch-hole camera — centered, near top ───────────────────────
+    punch_x = ANDROID_TABLET_W // 2
+    punch_y = screen_y + ANDROID_TABLET_PUNCH_TOP + ANDROID_TABLET_PUNCH_R
+    fd2 = ImageDraw.Draw(frame)
+    fd2.ellipse(
+        [punch_x - ANDROID_TABLET_PUNCH_R - 3,
+         punch_y - ANDROID_TABLET_PUNCH_R - 3,
+         punch_x + ANDROID_TABLET_PUNCH_R + 3,
+         punch_y + ANDROID_TABLET_PUNCH_R + 3],
+        fill=(8, 8, 8, 200),
+    )
+    fd2.ellipse(
+        [punch_x - ANDROID_TABLET_PUNCH_R, punch_y - ANDROID_TABLET_PUNCH_R,
+         punch_x + ANDROID_TABLET_PUNCH_R, punch_y + ANDROID_TABLET_PUNCH_R],
+        fill=(0, 0, 0, 255),
+    )
+
+    # ── Side buttons — right edge ────────────────────────────────────
+    btn_outer = (46, 46, 48, 255)
+    btn_inner = (30, 30, 32, 255)
+
+    # Power (right)
+    fd2.rounded_rectangle(
+        [ANDROID_TABLET_W - 1, 280, ANDROID_TABLET_W + 5, 400],
+        radius=2, fill=btn_outer,
+    )
+    fd2.rounded_rectangle(
+        [ANDROID_TABLET_W, 282, ANDROID_TABLET_W + 4, 398],
+        radius=2, fill=btn_inner,
+    )
+    # Volume up (right, below power)
+    fd2.rounded_rectangle(
+        [ANDROID_TABLET_W - 1, 450, ANDROID_TABLET_W + 5, 550],
+        radius=2, fill=btn_outer,
+    )
+    fd2.rounded_rectangle(
+        [ANDROID_TABLET_W, 452, ANDROID_TABLET_W + 4, 548],
+        radius=2, fill=btn_inner,
+    )
+    # Volume down (right)
+    fd2.rounded_rectangle(
+        [ANDROID_TABLET_W - 1, 570, ANDROID_TABLET_W + 5, 670],
+        radius=2, fill=btn_outer,
+    )
+    fd2.rounded_rectangle(
+        [ANDROID_TABLET_W, 572, ANDROID_TABLET_W + 4, 668],
+        radius=2, fill=btn_inner,
+    )
+
+    out = os.path.join(ASSETS_DIR, "android_tablet_frame.png")
+    frame.save(out, "PNG")
+    print(f"  Android tablet frame: {out} ({ANDROID_TABLET_W}x{ANDROID_TABLET_H})")
+    return out
+
+
 if __name__ == "__main__":
     os.makedirs(ASSETS_DIR, exist_ok=True)
     print("Generating device frames...")
     generate_iphone()
     generate_android()
+    generate_ipad()
+    generate_android_tablet()
     print("Done.")

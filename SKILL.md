@@ -37,18 +37,22 @@ Check Claude Code memory for any saved progress on this project:
 
 Ask the user for the following configuration. Present as a clean checklist:
 
-1. **Target platforms** — Which platforms? (default: both iOS and Android)
-   - iOS (Apple App Store)
-   - Android (Google Play Store)
-   - Both
+1. **Target platforms** — Which platforms? (default: phone only — iOS and Android)
+   - iOS phone (Apple App Store) — 1320×2868
+   - Android phone (Google Play Store) — 1080×1920
+   - iPad Pro 13" (App Store Connect) — 2064×2752
+   - Android tablet (Google Play Large Screen) — 1600×2560
+   - Phone only (iOS + Android)
+   - All platforms (phone + tablet, both iOS and Android)
 
 2. **Number of screenshots** — How many per platform? (default: 6)
    - 6 screenshots (recommended minimum)
    - 8 screenshots (maximum coverage)
 
 3. **Language** — What language for headline text? (default: English)
-   - Let user specify any language (English, Turkish, Spanish, German, Japanese, etc.)
-   - This affects the verb + descriptor text on each screenshot
+   - **Recommended**: Generate in English first, then use Gemini to translate to additional languages (see Phase 6)
+   - Or specify a single language directly (English, Turkish, Spanish, German, Japanese, etc.)
+   - English-first approach is faster and produces more consistent results across languages
 
 4. **Screenshot source** — Where are the app screenshots coming from?
    - **Auto-capture**: I'll guide you through taking simulator screenshots
@@ -167,41 +171,74 @@ pip install Pillow
 ```bash
 python generate_frame.py
 ```
-This creates `assets/iphone_frame.png` and `assets/android_frame.png`.
+This creates:
+- `assets/iphone_frame.png` (iPhone 16 Pro Max)
+- `assets/android_frame.png` (Pixel-style phone)
+- `assets/ipad_frame.png` (iPad Pro 13")
+- `assets/android_tablet_frame.png` (Android 10" tablet)
 
 ### Generate screenshots
-For each benefit-screenshot pair, generate the composed image:
+
+Output filenames follow the format `{LANG_CODE}_{SS_NUMBER}` (e.g., `en_01.png`, `en_02.png`).
 
 ```bash
-# iOS version
+# iOS phone
 python compose.py \
   --platform ios \
   --bg "{brand_colour}" \
   --verb "{verb}" \
   --desc "{descriptor}" \
   --screenshot "{screenshot_path}" \
-  --output "output/ios/screenshot_{n}.png"
+  --output "output/ios/en_{n:02d}.png"
 
-# Android version
+# Android phone
 python compose.py \
   --platform android \
   --bg "{brand_colour}" \
   --verb "{verb}" \
   --desc "{descriptor}" \
   --screenshot "{screenshot_path}" \
-  --output "output/android/screenshot_{n}.png"
+  --output "output/android/en_{n:02d}.png"
+
+# iPad Pro 13" (if tablet selected)
+python compose.py \
+  --platform ipad \
+  --bg "{brand_colour}" \
+  --verb "{verb}" \
+  --desc "{descriptor}" \
+  --screenshot "{screenshot_path_tablet}" \
+  --output "output/ipad/en_{n:02d}.png"
+
+# Android tablet (if tablet selected)
+python compose.py \
+  --platform android_tablet \
+  --bg "{brand_colour}" \
+  --verb "{verb}" \
+  --desc "{descriptor}" \
+  --screenshot "{screenshot_path_tablet}" \
+  --output "output/android_tablet/en_{n:02d}.png"
 ```
+
+**Note on tablet screenshots**: Tablet app screenshots should ideally be taken from the iPad/tablet simulator. If the user only has phone screenshots, they can still be used — compose.py will scale them to fit the device screen area.
 
 ### Output directory structure
 ```
 output/
   ios/
-    screenshot_1.png  (1320x2868)
-    screenshot_2.png
+    en_01.png  (1320×2868)
+    en_02.png
     ...
   android/
-    screenshot_1.png  (1080x1920)
-    screenshot_2.png
+    en_01.png  (1080×1920)
+    en_02.png
+    ...
+  ipad/               ← only if tablet selected
+    en_01.png  (2064×2752)
+    en_02.png
+    ...
+  android_tablet/     ← only if tablet selected
+    en_01.png  (1600×2560)
+    en_02.png
     ...
 ```
 
@@ -224,20 +261,31 @@ After composing, run `gemini_enhance.py` on each generated screenshot to produce
 ```bash
 # Enhance a single screenshot with app context
 python3 gemini_enhance.py \
-  --input "output/ios/screenshot_{n}.png" \
-  --output "output/ios/screenshot_{n}.png" \
+  --input "output/ios/en_{n}.png" \
+  --output "output/ios/en_{n}.png" \
   --model "{gemini_model}" \
   --app-desc "{short app description}" \
   --bg-color "{brand_colour}" \
+  --lang-code "en" \
   --index {n}
 
-# Or batch enhance an entire directory
+# Batch enhance an entire directory (with --lang-code for proper naming)
 python3 gemini_enhance.py \
   --input-dir output/ios/ \
   --output-dir output/ios/ \
   --model "{gemini_model}" \
   --app-desc "{short app description}" \
-  --bg-color "{brand_colour}"
+  --bg-color "{brand_colour}" \
+  --lang-code "en"
+
+# Tablet platforms use the same command with different directories
+python3 gemini_enhance.py \
+  --input-dir output/ipad/ \
+  --output-dir output/ipad/ \
+  --model "{gemini_model}" \
+  --app-desc "{short app description}" \
+  --bg-color "{brand_colour}" \
+  --lang-code "en"
 ```
 
 **Available models:**
@@ -300,6 +348,131 @@ python showcase.py \
 - [ ] Screenshots show compelling app states
 - [ ] Visual style is consistent across all screenshots
 - [ ] Both platforms have matching content (same benefits, same order)
+
+---
+
+## Phase 6 — Multi-Language Translation (Optional)
+
+Use Gemini to generate translated versions of your English screenshots. This is faster than re-running the full pipeline and works for any number of languages.
+
+### Prerequisites
+- English screenshots must already be generated and enhanced (Phase 4 output)
+- Same Gemini model and API key from Phase 4
+
+### Translate a single language
+
+Always pass `--lang-code` so output files are named correctly (`tr_01.png`, `tr_02.png`, etc.) and culturally resonant decorative elements are added automatically.
+
+```bash
+# Translate all iOS phone screenshots to Turkish
+python3 gemini_enhance.py \
+  --input-dir output/ios/ \
+  --output-dir output/tr/ios/ \
+  --model "{gemini_model}" \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+
+# Translate all Android phone screenshots to German
+python3 gemini_enhance.py \
+  --input-dir output/android/ \
+  --output-dir output/de/android/ \
+  --model "{gemini_model}" \
+  --translate-to "German" \
+  --lang-code "de"
+
+# Translate iPad screenshots (same pattern)
+python3 gemini_enhance.py \
+  --input-dir output/ipad/ \
+  --output-dir output/tr/ipad/ \
+  --model "{gemini_model}" \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+
+# Translate Android tablet screenshots
+python3 gemini_enhance.py \
+  --input-dir output/android_tablet/ \
+  --output-dir output/tr/android_tablet/ \
+  --model "{gemini_model}" \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+```
+
+### Translate a single screenshot
+
+```bash
+python3 gemini_enhance.py \
+  --input output/ios/en_01.png \
+  --output output/tr/ios/tr_01.png \
+  --model "{gemini_model}" \
+  --translate-to "Turkish" \
+  --lang-code "tr"
+```
+
+### Batch translate multiple languages
+
+Run once per target language. Output structure:
+
+```
+output/
+  ios/               ← English phone (en_01.png … en_0N.png)
+  android/           ← English phone
+  ipad/              ← English tablet (if generated)
+  android_tablet/    ← English tablet (if generated)
+  tr/
+    ios/             (tr_01.png … tr_0N.png)
+    android/
+    ipad/
+    android_tablet/
+  de/
+    ios/
+    android/
+    ...
+  ja/
+    ios/
+    android/
+    ...
+```
+
+### Supported languages
+Any language Gemini understands. Use full names for best results:
+- European: Turkish, German, French, Spanish, Italian, Portuguese, Dutch, Polish, Ukrainian
+- Asian: Japanese, Korean, Simplified Chinese, Traditional Chinese, Hindi, Thai, Indonesian
+- Others: Arabic, Russian, etc.
+
+### Cultural touches
+When `--lang-code` is provided, Gemini automatically integrates culturally resonant visual elements into the screenshot:
+
+| Code | Cultural aesthetic added |
+|------|--------------------------|
+| `tr` | Ottoman geometric tiles, tulip motifs, terracotta & turquoise |
+| `de` | Bauhaus geometry, cool steel blues, structured minimalism |
+| `fr` | Art Nouveau curves, gold accents, Parisian elegance |
+| `ja` | Cherry blossoms, wave motifs, generous negative space |
+| `ko` | Hanji paper texture, bojagi color geometry |
+| `zh` | Cloud ruyi patterns, bamboo, red & gold accents |
+| `ar` | Arabesque geometry, crescent motifs, lapis blue & gold |
+| `ru` | Constructivist geometry, deep reds & golds |
+| `es` | Moorish tile hints, sienna tones, Mediterranean vitality |
+| `it` | Renaissance composition, terracotta & cobalt |
+| `pt` | Azulejo tile patterns, deep indigo blues |
+| `hi` | Mandala patterns, saffron & marigold, Mughal geometry |
+| `ja` | Cherry blossom, wabi-sabi, ink-wash texture |
+| `uk` | Petrykivka folk florals, sunflowers, blue & gold |
+
+These are woven into decorative elements and backgrounds — never stereotypical, always tasteful.
+
+### Quality notes
+- **Idiomatic translation**: Gemini uses natural, compelling language — not literal word-for-word translation
+- **Special characters**: The prompt enforces correct character preservation (İ, Ğ, Ü, Ä, etc.)
+- **Cultural consistency**: Each language version has its own cultural visual identity while maintaining brand colour
+- **Review recommended**: Spot-check a few screenshots per language, especially for languages with non-Latin scripts
+
+### Final checklist for translated sets
+- [ ] Headline text is in the correct language and reads naturally
+- [ ] Special characters are correct (no ASCII substitutions)
+- [ ] Text contrast and readability is preserved
+- [ ] Device frame and app content are unchanged
+- [ ] All screenshots per language are the correct platform dimensions
 
 ---
 

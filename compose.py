@@ -50,6 +50,34 @@ PLATFORMS = {
         "desc_size": 96,
         "frame_file": "android_frame.png",
     },
+    # iPad Pro 13" — App Store Connect requirement: 2064×2752
+    "ipad": {
+        "canvas_w": 2064,
+        "canvas_h": 2752,
+        "device_w": 1600,
+        "bezel": 26,
+        "screen_corner_r": 84,
+        "device_y": 1020,
+        "text_top": 260,
+        "verb_size_max": 340,
+        "verb_size_min": 200,
+        "desc_size": 164,
+        "frame_file": "ipad_frame.png",
+    },
+    # Android tablet — Google Play Large Screen: 1600×2560
+    "android_tablet": {
+        "canvas_w": 1600,
+        "canvas_h": 2560,
+        "device_w": 1280,
+        "bezel": 20,
+        "screen_corner_r": 60,
+        "device_y": 860,
+        "text_top": 210,
+        "verb_size_max": 280,
+        "verb_size_min": 160,
+        "desc_size": 128,
+        "frame_file": "android_tablet_frame.png",
+    },
 }
 
 # ─── Typography ─────────────────────────────────────────────────────
@@ -266,8 +294,8 @@ def main():
     p.add_argument(
         "--platform",
         required=True,
-        choices=["ios", "android"],
-        help="Target platform (ios or android)",
+        choices=["ios", "android", "ipad", "android_tablet"],
+        help="Target platform (ios, android, ipad, android_tablet)",
     )
     p.add_argument("--bg", required=True, help="Background hex colour (#E31837)")
     p.add_argument("--verb", required=True, help="Action verb headline (TRACK)")

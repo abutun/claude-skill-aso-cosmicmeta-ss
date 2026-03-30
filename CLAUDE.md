@@ -4,10 +4,10 @@ This skill generates high-converting App Store and Google Play screenshots with 
 
 ## Architecture
 
-- `SKILL.md` — Main workflow definition (5 phases)
-- `compose.py` — Screenshot compositor (supports iOS 1320x2868 and Android 1080x1920)
-- `generate_frame.py` — Device frame generator (iPhone + Android/Pixel)
-- `gemini_enhance.py` — AI enhancement via Gemini (nano-banana-pro / nano-banana-2)
+- `SKILL.md` — Main workflow definition (6 phases)
+- `compose.py` — Screenshot compositor (ios, android, ipad, android_tablet)
+- `generate_frame.py` — Device frame generator (iPhone, Android, iPad Pro 13", Android tablet)
+- `gemini_enhance.py` — AI enhancement + translation via Gemini (nano-banana-pro / nano-banana-2)
 - `showcase.py` — Preview gallery generator (side-by-side comparison)
 - `update.py` — Version check and auto-update script
 - `VERSION` — Current version number
@@ -17,9 +17,13 @@ This skill generates high-converting App Store and Google Play screenshots with 
 
 - **Never include paywall or IAP screenshots** in the generated set
 - Always generate frames before composing (`python generate_frame.py`)
-- Maintain exact platform dimensions — iOS: 1320x2868, Android: 1080x1920
+- Maintain exact platform dimensions:
+  - iOS phone: 1320×2868 | Android phone: 1080×1920
+  - iPad Pro 13": 2064×2752 | Android tablet: 1600×2560
+- Output filenames use `{lang_code}_{n:02d}.png` format (e.g., `en_01.png`, `tr_03.png`)
 - Text adapts to background luminance (white on dark, dark on light)
-- Support any language for headline text (verb + descriptor)
+- `--lang-code` enables both correct output naming and cultural visual touches in Gemini prompts
+- English-first workflow: generate English, then translate per language with `--translate-to` + `--lang-code`
 
 ## Dependencies
 

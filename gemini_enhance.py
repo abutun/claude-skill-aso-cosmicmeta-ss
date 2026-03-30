@@ -68,6 +68,34 @@ MODEL_ALIASES = {
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
+TRANSLATION_PROMPT_TEMPLATE = (
+    "TRANSLATION TASK: This is an English app store screenshot. "
+    "Translate ONLY the headline text into {language}.\n\n"
+    "WHAT TO TRANSLATE:\n"
+    "- The large bold action verb at the top (e.g., 'TRACK', 'DISCOVER')\n"
+    "- The smaller descriptor text below it (e.g., 'YOUR DAILY MOOD')\n\n"
+    "TRANSLATION RULES:\n"
+    "- Use idiomatic, compelling expressions in {language} — NOT word-for-word literal translation\n"
+    "- Keep the same ALL CAPS rendering style\n"
+    "- Preserve exact font weight, size, color, positioning, and drop shadows\n"
+    "- CRITICAL: Special characters MUST be correct and preserved exactly:\n"
+    "  Turkish: İ/i (not I/i), Ç, Ö, Ü, Ğ, Ş\n"
+    "  German: Ä, Ö, Ü, ß (becomes SS in all-caps)\n"
+    "  French/Spanish: É, Ñ, À, Ü, etc.\n"
+    "  Never strip, replace, or ASCII-ify special characters.\n"
+    "- The translated headline should have the same emotional punch and brevity as the English original\n"
+    "- If the translation is significantly longer, use a shorter idiomatic equivalent\n\n"
+    "DO NOT CHANGE:\n"
+    "- The app screenshot content inside the device frame\n"
+    "- The device frame itself\n"
+    "- Background color, gradient, or any decorative visual elements\n"
+    "- Image dimensions\n"
+    "- Any non-text visual elements\n\n"
+    "CONSTRAINTS:\n"
+    "- Maintain exact image dimensions\n"
+    "- Only the headline text changes — everything else stays identical"
+)
+
 DEFAULT_ENHANCE_PROMPT = (
     "Transform this app store screenshot into a premium, high-converting visual "
     "that makes users want to download the app within 3 seconds. "
@@ -148,6 +176,82 @@ ALTERNATE_ENHANCE_PROMPT = (
 PLATFORM_DIMS = {
     "ios": (1320, 2868),
     "android": (1080, 1920),
+    "ipad": (2064, 2752),
+    "android_tablet": (1600, 2560),
+}
+
+# ─── Cultural context hints per language code ────────────────────────
+# Used to guide Gemini toward culturally resonant decorative elements.
+
+CULTURAL_HINTS = {
+    "tr": (
+        "Turkish/Ottoman aesthetic — geometric tile motifs, tulip and iznik patterns, "
+        "warm terracotta and turquoise tones, Mediterranean warmth and vibrancy"
+    ),
+    "de": (
+        "German/Bauhaus aesthetic — clean geometric precision, structured minimalism, "
+        "cool steel blues and greys, Bauhaus grid references, confident and authoritative"
+    ),
+    "fr": (
+        "French elegance — subtle Art Nouveau curves, fleur-de-lis hints, "
+        "sophisticated palette with gold accents, Parisian chic and refinement"
+    ),
+    "ja": (
+        "Japanese minimalism — cherry blossom petals, subtle wave or crane motifs, "
+        "wabi-sabi simplicity, generous negative space, ink-wash texture hints"
+    ),
+    "ko": (
+        "Korean modern aesthetic — clean lines with subtle hanji paper texture, "
+        "cool tones, bojagi patchwork color geometry, K-design sensibility"
+    ),
+    "zh": (
+        "Chinese aesthetic — subtle cloud ruyi patterns, bamboo or plum blossom hints, "
+        "rich red and gold accents, balanced symmetrical composition"
+    ),
+    "ar": (
+        "Arabic/Middle Eastern aesthetic — intricate geometric arabesque patterns, "
+        "crescent and star motifs, warm gold and deep lapis blue, ornate border hints"
+    ),
+    "ru": (
+        "Russian aesthetic — bold constructivist geometry, deep reds and golds, "
+        "subtle Slavic folk pattern hints, ornate Imperial flourishes"
+    ),
+    "es": (
+        "Spanish/Latin aesthetic — warm sienna and ochre tones, flamenco energy, "
+        "Moorish tile mosaic hints, Mediterranean sun and vitality"
+    ),
+    "it": (
+        "Italian design elegance — Renaissance compositional harmony, "
+        "rich terracotta and cobalt, classical architectural proportion hints"
+    ),
+    "pt": (
+        "Portuguese aesthetic — azulejo blue tile patterns, deep indigo blues, "
+        "Atlantic coastal warmth, ornate filigree hints"
+    ),
+    "nl": (
+        "Dutch/Flemish aesthetic — Delft blue and white accents, clean geometric tulip hints, "
+        "Golden Age still-life richness, windmill silhouette subtleties"
+    ),
+    "pl": (
+        "Polish folk art — Wycinanki paper-cut floral motifs, vivid folk colors, "
+        "Slavic geometric ornaments, bold symmetrical patterns"
+    ),
+    "hi": (
+        "Indian aesthetic — intricate mandala patterns, saffron and marigold tones, "
+        "Mughal geometric ornament, paisley motifs, rich jewel-tone accents"
+    ),
+    "th": (
+        "Thai aesthetic — golden Buddhist temple motifs, tropical florals, "
+        "warm gold and emerald tones, graceful curved architectural references"
+    ),
+    "id": (
+        "Indonesian aesthetic — batik geometric and floral patterns, "
+        "warm earth tones and deep indigo, tropical botanical elements"
+    ),
+    "uk": (
+        "Ukrainian aesthetic — vivid Petrykivka floral folk art, "
+        "sunflower motifs, blue and gold national palette, embroidered vyshyvanka patterns"
+    ),
 }
 
 
@@ -197,15 +301,14 @@ def detect_platform(image_path):
     """Detect platform from image dimensions."""
     img = Image.open(image_path)
     w, h = img.size
-    if w == 1320 and h == 2868:
-        return "ios"
-    elif w == 1080 and h == 1920:
-        return "android"
+    for platform, (pw, ph) in PLATFORM_DIMS.items():
+        if w == pw and h == ph:
+            return platform
     return None
 
 
-def build_prompt(base_prompt, app_desc=None, bg_color=None):
-    """Build the final prompt with optional app context."""
+def build_prompt(base_prompt, app_desc=None, bg_color=None, lang_code=None):
+    """Build the final prompt with optional app context and cultural hints."""
     parts = [base_prompt]
     if app_desc:
         parts.append(
@@ -218,13 +321,36 @@ def build_prompt(base_prompt, app_desc=None, bg_color=None):
             f"\n\nBACKGROUND COLOR: The base background is {bg_color}. "
             f"Enhance it with gradients and depth while keeping the same color family."
         )
+    if lang_code and lang_code.lower() in CULTURAL_HINTS:
+        hint = CULTURAL_HINTS[lang_code.lower()]
+        parts.append(
+            f"\n\nCULTURAL CONTEXT: This screenshot targets {lang_code.upper()}-speaking markets. "
+            f"Subtly weave in culturally resonant visual elements: {hint}. "
+            f"These should feel natural and authentic, not stereotypical — "
+            f"integrated into the decorative elements, background textures, and floating graphics."
+        )
     return "".join(parts)
+
+
+def build_translation_prompt(language, lang_code=None):
+    """Build a translation prompt for the given target language with optional cultural context."""
+    base = TRANSLATION_PROMPT_TEMPLATE.format(language=language)
+    if lang_code and lang_code.lower() in CULTURAL_HINTS:
+        hint = CULTURAL_HINTS[lang_code.lower()]
+        base += (
+            f"\n\nCULTURAL CONTEXT: This screenshot targets {language}-speaking markets. "
+            f"While translating, also subtly weave in culturally resonant visual elements "
+            f"into the decorative elements, background textures, and floating graphics: "
+            f"{hint}. "
+            f"These should feel natural and authentic, not stereotypical."
+        )
+    return base
 
 
 def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
                         prompt=None, platform=None, app_desc=None,
-                        bg_color=None, index=0):
-    """Send image to Gemini for enhancement and save the result."""
+                        bg_color=None, index=0, translate_to=None, lang_code=None):
+    """Send image to Gemini for enhancement (or translation) and save the result."""
     if model not in SUPPORTED_MODELS:
         print(f"  Error: Unknown model '{model}'. Supported: {', '.join(SUPPORTED_MODELS)}")
         return False
@@ -232,13 +358,15 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
     # Resolve friendly alias to actual API model ID
     model = MODEL_ALIASES.get(model, model)
 
-    # Alternate prompts for visual variety across the set
+    # Choose prompt: explicit > translation > alternating enhancement
     if prompt:
         enhance_prompt = prompt
+    elif translate_to:
+        enhance_prompt = build_translation_prompt(translate_to, lang_code)
     elif index % 2 == 0:
-        enhance_prompt = build_prompt(DEFAULT_ENHANCE_PROMPT, app_desc, bg_color)
+        enhance_prompt = build_prompt(DEFAULT_ENHANCE_PROMPT, app_desc, bg_color, lang_code)
     else:
-        enhance_prompt = build_prompt(ALTERNATE_ENHANCE_PROMPT, app_desc, bg_color)
+        enhance_prompt = build_prompt(ALTERNATE_ENHANCE_PROMPT, app_desc, bg_color, lang_code)
     image_b64 = image_to_base64(image_path)
 
     # Detect platform for final dimension enforcement
@@ -315,8 +443,13 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
 
 
 def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
-                  prompt=None, app_desc=None, bg_color=None):
-    """Enhance all PNG files in a directory with alternating prompts."""
+                  prompt=None, app_desc=None, bg_color=None,
+                  translate_to=None, lang_code=None):
+    """Enhance (or translate) all PNG files in a directory with alternating prompts.
+
+    When lang_code is provided, output files are renamed to {lang_code}_{n:02d}.png
+    (e.g., en_01.png, tr_05.png). Otherwise input filenames are preserved.
+    """
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -326,17 +459,23 @@ def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
         print(f"  No PNG files found in {input_dir}")
         return
 
-    print(f"  Enhancing {len(png_files)} screenshots with {model}...")
+    action = f"Translating to {translate_to}" if translate_to else f"Enhancing with {model}"
+    print(f"  {action} — {len(png_files)} screenshots...")
     success = 0
     for i, img_file in enumerate(png_files):
-        out_file = output_path / img_file.name
+        if lang_code:
+            out_name = f"{lang_code.lower()}_{i + 1:02d}.png"
+        else:
+            out_name = img_file.name
+        out_file = output_path / out_name
         if enhance_with_gemini(
             str(img_file), str(out_file), api_key, model, prompt,
-            app_desc=app_desc, bg_color=bg_color, index=i
+            app_desc=app_desc, bg_color=bg_color, index=i,
+            translate_to=translate_to, lang_code=lang_code,
         ):
             success += 1
 
-    print(f"  Done: {success}/{len(png_files)} enhanced successfully.")
+    print(f"  Done: {success}/{len(png_files)} processed successfully.")
 
 
 def main():
@@ -396,6 +535,25 @@ Examples:
         default=0,
         help="Screenshot index for prompt alternation (even=default, odd=alternate)",
     )
+    p.add_argument(
+        "--translate-to",
+        metavar="LANGUAGE",
+        help=(
+            "Translate headline text to this language instead of enhancing visuals. "
+            "Use full language names for best results (e.g., 'Turkish', 'German', "
+            "'Japanese', 'French'). Input screenshots must already be English."
+        ),
+    )
+    p.add_argument(
+        "--lang-code",
+        metavar="CODE",
+        help=(
+            "ISO 639-1 language code (e.g., en, tr, de, ja, fr). "
+            "In batch mode, renames output files to {code}_{n:02d}.png (e.g., tr_01.png). "
+            "Also adds culturally resonant visual hints to the Gemini prompt for "
+            "supported languages (tr, de, fr, ja, ko, zh, ar, ru, es, it, pt, nl, pl, hi, th, id, uk)."
+        ),
+    )
 
     args = p.parse_args()
 
@@ -419,6 +577,8 @@ Examples:
         batch_enhance(
             args.input_dir, args.output_dir, api_key, args.model,
             args.prompt, args.app_desc, args.bg_color,
+            translate_to=args.translate_to,
+            lang_code=args.lang_code,
         )
         return
 
@@ -430,6 +590,8 @@ Examples:
     enhance_with_gemini(
         args.input, args.output, api_key, args.model, args.prompt,
         args.platform, args.app_desc, args.bg_color, args.index,
+        translate_to=args.translate_to,
+        lang_code=args.lang_code,
     )
 
 
