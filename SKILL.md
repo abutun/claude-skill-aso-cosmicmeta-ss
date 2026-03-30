@@ -201,21 +201,25 @@ output/
 - Maintain visual rhythm across the set — they should look like a cohesive collection
 
 ### AI Enhancement with Gemini (Required)
-After composing, run `gemini_enhance.py` on each generated screenshot to produce the final polished output:
+After composing, run `gemini_enhance.py` on each generated screenshot to produce the final polished output. This is the critical step that transforms plain mockups into premium, high-converting visuals.
 
 ```bash
-# Enhance a single screenshot
+# Enhance a single screenshot with app context
 python3 gemini_enhance.py \
   --input "output/ios/screenshot_{n}.png" \
   --output "output/ios/screenshot_{n}.png" \
   --model "{gemini_model}" \
-  --api-key "{gemini_api_key}"
+  --app-desc "{short app description}" \
+  --bg-color "{brand_colour}" \
+  --index {n}
 
 # Or batch enhance an entire directory
 python3 gemini_enhance.py \
   --input-dir output/ios/ \
   --output-dir output/ios/ \
-  --model "{gemini_model}"
+  --model "{gemini_model}" \
+  --app-desc "{short app description}" \
+  --bg-color "{brand_colour}"
 ```
 
 **Available models:**
@@ -223,10 +227,15 @@ python3 gemini_enhance.py \
 - `nano-banana-2` — Faster enhancement, good quality (recommended for iteration)
 
 **What Gemini enhancement does:**
-- Adds realistic lighting effects, smooth gradients, and a premium feel
-- Enhances background quality with professional polish
-- Preserves text, device frame, and app content exactly as composed
+- **Text readability**: Ensures headline text has maximum contrast (white on dark, dark on light) with glows and shadows
+- **Floating decorative elements**: Adds app-related icons, abstract shapes, particles, and sparkles around the device
+- **3D perspective**: Alternates between straight-on and tilted device angles for visual variety
+- **Rich backgrounds**: Enhances flat backgrounds with gradients, organic shapes, ambient lighting, and depth
+- **Breakout effects**: Elements that extend beyond the device frame for dynamic compositions
+- **Professional polish**: Shadows, reflections, lens flares, and lighting that make each screenshot feel designer-crafted
 - **Always** enforces exact store-required dimensions after AI processing
+
+**The script alternates between two built-in prompt styles** (even/odd screenshots) to create visual variety across the set while maintaining consistency.
 
 **API key resolution order:**
 1. `--api-key` CLI argument

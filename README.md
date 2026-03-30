@@ -178,30 +178,34 @@ python3 compose.py \
 
 #### gemini_enhance.py — AI-powered screenshot enhancement
 
+This is the critical step that transforms plain mockups into premium, high-converting visuals with floating decorative elements, dynamic lighting, 3D perspectives, and rich backgrounds.
+
 ```bash
-# Enhance a single screenshot (uses nano-banana-pro by default)
+# Enhance with app context (recommended)
 python3 gemini_enhance.py \
   --input output/ios/screenshot_1.png \
-  --output output/ios/screenshot_1_enhanced.png
+  --output output/ios/screenshot_1.png \
+  --model nano-banana-pro \
+  --app-desc "tunnel racing game" \
+  --bg-color "#0D7377"
 
-# Use nano-banana-2 for faster processing
-python3 gemini_enhance.py \
-  --input output/ios/screenshot_1.png \
-  --output output/ios/screenshot_1_enhanced.png \
-  --model nano-banana-2
-
-# Batch enhance all screenshots in a directory
+# Batch enhance all screenshots with context
 python3 gemini_enhance.py \
   --input-dir output/ios/ \
-  --output-dir output/ios/enhanced/ \
-  --model nano-banana-pro
+  --output-dir output/ios/ \
+  --model nano-banana-pro \
+  --app-desc "mood tracking app" \
+  --bg-color "#E31837"
 
 # Use a custom enhancement prompt
 python3 gemini_enhance.py \
   --input screenshot.png \
   --output enhanced.png \
-  --prompt "Add warm lighting and subtle glass reflections on the device"
+  --model nano-banana-2 \
+  --prompt "Add warm lighting, floating music notes, and glass reflections"
 ```
+
+The script **alternates between two built-in prompt styles** (even/odd screenshots) to create visual variety across the set while maintaining a cohesive look.
 
 **gemini_enhance.py arguments:**
 
@@ -212,9 +216,12 @@ python3 gemini_enhance.py \
 | `--input-dir` | Yes* | Input directory for batch mode |
 | `--output-dir` | Yes* | Output directory for batch mode |
 | `--model` | Yes | `nano-banana-pro` (higher quality) or `nano-banana-2` (faster) |
+| `--app-desc` | No | Short app description for contextual decorative elements (e.g., `"tunnel racing game"`) |
+| `--bg-color` | No | Background hex color for gradient guidance (e.g., `"#1A73E8"`) |
+| `--index` | No | Screenshot index for prompt alternation (even=style A, odd=style B) |
 | `--api-key` | No | Gemini API key (or use `GEMINI_API_KEY` env var / `.gemini_config.json`) |
 | `--save-key` | No | Save API key to `.gemini_config.json` for future use |
-| `--prompt` | No | Custom enhancement prompt (overrides default) |
+| `--prompt` | No | Custom enhancement prompt (overrides built-in prompts) |
 | `--platform` | No | Force `ios` or `android` (auto-detected from dimensions) |
 
 *Use either `--input`/`--output` for single file or `--input-dir`/`--output-dir` for batch.

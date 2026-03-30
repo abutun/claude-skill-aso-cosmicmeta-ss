@@ -62,11 +62,72 @@ SUPPORTED_MODELS = ["nano-banana-pro", "nano-banana-2"]
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 DEFAULT_ENHANCE_PROMPT = (
-    "Enhance this app store screenshot to look more professional and polished. "
-    "Add subtle lighting effects, smooth gradients, and a premium feel. "
-    "Keep the text, device frame, and app content exactly as they are. "
-    "Only enhance the background and overall visual quality. "
-    "Maintain the exact same dimensions and layout."
+    "Transform this app store screenshot into a premium, high-converting visual "
+    "that makes users want to download the app within 3 seconds. "
+    "\n\n"
+    "CRITICAL TEXT RULES:\n"
+    "- The headline text MUST remain clearly readable with maximum contrast\n"
+    "- If the background is dark, text MUST be bright white with a subtle glow/shadow\n"
+    "- If the background is light, text MUST be deep black or dark color\n"
+    "- Text should NEVER blend into or be hard to read against the background\n"
+    "- Keep the exact same text content, font style, and positioning\n"
+    "\n"
+    "VISUAL ENHANCEMENTS:\n"
+    "- Add floating decorative elements related to the app's purpose "
+    "(icons, abstract shapes, particles, sparkles, emoji-style graphics)\n"
+    "- Create depth with layered elements at different sizes and opacities\n"
+    "- Add subtle ambient lighting, glows, and lens flare effects\n"
+    "- Enhance the background with rich gradients, organic shapes, or abstract patterns\n"
+    "- Add soft shadows and reflections around the device frame\n"
+    "- Consider tilting the device slightly (5-15 degrees) for a dynamic, "
+    "3D perspective feel\n"
+    "- Add small floating UI elements or app-related icons that break outside "
+    "the device frame for a \"breakout\" effect\n"
+    "\n"
+    "STYLE REFERENCE:\n"
+    "- Think premium App Store featured apps (Apple, Headspace, Calm style)\n"
+    "- Rich, vibrant backgrounds with depth and dimension\n"
+    "- Professional marketing material quality, not a plain mockup\n"
+    "- The overall composition should feel like a designer spent hours on it\n"
+    "\n"
+    "CONSTRAINTS:\n"
+    "- Keep the app screenshot content inside the device exactly as shown\n"
+    "- Maintain the exact same image dimensions\n"
+    "- The device frame should remain visible and recognizable\n"
+    "- Do NOT add any new text — only enhance the existing text's visibility"
+)
+
+# Alternate prompt for variety (used for even-numbered screenshots)
+ALTERNATE_ENHANCE_PROMPT = (
+    "Create a stunning, award-winning app store screenshot from this mockup. "
+    "\n\n"
+    "CRITICAL TEXT RULES:\n"
+    "- Headline text MUST have maximum readability — bright white on dark "
+    "backgrounds, deep dark on light backgrounds\n"
+    "- Add a subtle text glow or shadow to ensure text pops against any background\n"
+    "- Keep the exact same text content and positioning\n"
+    "\n"
+    "VISUAL STYLE:\n"
+    "- Tilt the phone at a slight angle (10-20 degrees) for a dynamic, "
+    "editorial magazine feel\n"
+    "- Add floating 3D elements, abstract shapes, and decorative graphics "
+    "that relate to the app's theme\n"
+    "- Use dramatic lighting — soft glows, ambient light sources, "
+    "bokeh-style background elements\n"
+    "- Add depth with elements at multiple layers (foreground, mid, background)\n"
+    "- Include subtle particle effects, sparkles, or floating icons\n"
+    "- Create a rich, immersive atmosphere around the device\n"
+    "\n"
+    "QUALITY:\n"
+    "- This should look like it was designed by a top creative agency\n"
+    "- Think Apple keynote presentation quality\n"
+    "- Professional, polished, and visually striking\n"
+    "\n"
+    "CONSTRAINTS:\n"
+    "- Preserve the app content inside the device screen exactly\n"
+    "- Maintain exact image dimensions\n"
+    "- Keep device frame visible\n"
+    "- Do NOT add new text, only enhance existing text visibility"
 )
 
 # ─── Store dimensions for final crop ────────────────────────────────
@@ -123,21 +184,45 @@ def detect_platform(image_path):
     """Detect platform from image dimensions."""
     img = Image.open(image_path)
     w, h = img.size
-    if w == 1290 and h == 2796:
+    if w == 1320 and h == 2868:
         return "ios"
     elif w == 1080 and h == 1920:
         return "android"
     return None
 
 
+def build_prompt(base_prompt, app_desc=None, bg_color=None):
+    """Build the final prompt with optional app context."""
+    parts = [base_prompt]
+    if app_desc:
+        parts.append(
+            f"\n\nAPP CONTEXT: This is a screenshot for '{app_desc}'. "
+            f"Add floating decorative elements, icons, and graphics that relate "
+            f"to this app's theme and purpose."
+        )
+    if bg_color:
+        parts.append(
+            f"\n\nBACKGROUND COLOR: The base background is {bg_color}. "
+            f"Enhance it with gradients and depth while keeping the same color family."
+        )
+    return "".join(parts)
+
+
 def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
-                        prompt=None, platform=None):
+                        prompt=None, platform=None, app_desc=None,
+                        bg_color=None, index=0):
     """Send image to Gemini for enhancement and save the result."""
     if model not in SUPPORTED_MODELS:
         print(f"  Error: Unknown model '{model}'. Supported: {', '.join(SUPPORTED_MODELS)}")
         return False
 
-    enhance_prompt = prompt or DEFAULT_ENHANCE_PROMPT
+    # Alternate prompts for visual variety across the set
+    if prompt:
+        enhance_prompt = prompt
+    elif index % 2 == 0:
+        enhance_prompt = build_prompt(DEFAULT_ENHANCE_PROMPT, app_desc, bg_color)
+    else:
+        enhance_prompt = build_prompt(ALTERNATE_ENHANCE_PROMPT, app_desc, bg_color)
     image_b64 = image_to_base64(image_path)
 
     # Detect platform for final dimension enforcement
@@ -214,8 +299,8 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
 
 
 def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
-                  prompt=None):
-    """Enhance all PNG files in a directory."""
+                  prompt=None, app_desc=None, bg_color=None):
+    """Enhance all PNG files in a directory with alternating prompts."""
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -227,9 +312,12 @@ def batch_enhance(input_dir, output_dir, api_key, model=DEFAULT_MODEL,
 
     print(f"  Enhancing {len(png_files)} screenshots with {model}...")
     success = 0
-    for img_file in png_files:
+    for i, img_file in enumerate(png_files):
         out_file = output_path / img_file.name
-        if enhance_with_gemini(str(img_file), str(out_file), api_key, model, prompt):
+        if enhance_with_gemini(
+            str(img_file), str(out_file), api_key, model, prompt,
+            app_desc=app_desc, bg_color=bg_color, index=i
+        ):
             success += 1
 
     print(f"  Done: {success}/{len(png_files)} enhanced successfully.")
@@ -271,11 +359,26 @@ Examples:
     )
     p.add_argument("--api-key", help="Gemini API key (or set GEMINI_API_KEY env var)")
     p.add_argument("--save-key", help="Save API key to .gemini_config.json")
-    p.add_argument("--prompt", help="Custom enhancement prompt")
+    p.add_argument("--prompt", help="Custom enhancement prompt (overrides built-in prompts)")
+    p.add_argument(
+        "--app-desc",
+        help="Short app description for contextual decorative elements "
+             "(e.g., 'tunnel racing game', 'mood tracker')",
+    )
+    p.add_argument(
+        "--bg-color",
+        help="Background hex color for gradient guidance (e.g., '#1A73E8')",
+    )
     p.add_argument(
         "--platform",
         choices=["ios", "android"],
         help="Force platform (auto-detected from dimensions if omitted)",
+    )
+    p.add_argument(
+        "--index",
+        type=int,
+        default=0,
+        help="Screenshot index for prompt alternation (even=default, odd=alternate)",
     )
 
     args = p.parse_args()
@@ -297,7 +400,10 @@ Examples:
         if not args.output_dir:
             print("Error: --output-dir required with --input-dir")
             sys.exit(1)
-        batch_enhance(args.input_dir, args.output_dir, api_key, args.model, args.prompt)
+        batch_enhance(
+            args.input_dir, args.output_dir, api_key, args.model,
+            args.prompt, args.app_desc, args.bg_color,
+        )
         return
 
     # Single file mode
@@ -306,7 +412,8 @@ Examples:
         sys.exit(1)
 
     enhance_with_gemini(
-        args.input, args.output, api_key, args.model, args.prompt, args.platform
+        args.input, args.output, api_key, args.model, args.prompt,
+        args.platform, args.app_desc, args.bg_color, args.index,
     )
 
 

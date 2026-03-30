@@ -131,13 +131,27 @@ def fit_font(text, max_w, size_max, size_min):
     return ImageFont.truetype(FONT_PATH, size_min)
 
 
-def draw_centered(draw, y, text, font, fill, canvas_w, max_w=None):
+def draw_centered(draw, y, text, font, fill, canvas_w, max_w=None,
+                   shadow=False):
     lines = word_wrap(draw, text, font, max_w) if max_w else [text]
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         h = bbox[3] - bbox[1]
+        cx = canvas_w // 2
+        ty = y - bbox[1]
+        # Drop shadow for readability
+        if shadow:
+            shadow_color = (0, 0, 0, 120) if fill[0] > 128 else (255, 255, 255, 80)
+            for offset in [(2, 2), (3, 3)]:
+                draw.text(
+                    (cx + offset[0], ty + offset[1]),
+                    line,
+                    fill=shadow_color,
+                    font=font,
+                    anchor="mt",
+                )
         draw.text(
-            (canvas_w // 2, y - bbox[1]),
+            (cx, ty),
             line,
             fill=fill,
             font=font,
@@ -194,11 +208,13 @@ def compose(platform, bg_hex, verb, desc, screenshot_path, output_path,
         else ImageFont.load_default()
     )
 
-    # Draw text
+    # Draw text with drop shadow for readability
     y = cfg["text_top"]
-    y = draw_centered(draw, y, verb.upper(), verb_font, fill, canvas_w)
+    y = draw_centered(draw, y, verb.upper(), verb_font, fill, canvas_w,
+                       shadow=True)
     y += VERB_DESC_GAP
-    draw_centered(draw, y, desc.upper(), desc_font, fill, canvas_w, max_w=max_text_w)
+    draw_centered(draw, y, desc.upper(), desc_font, fill, canvas_w,
+                   max_w=max_text_w, shadow=True)
 
     # ── 3. Device positioning ───────────────────────────────────────
     device_y = cfg["device_y"]

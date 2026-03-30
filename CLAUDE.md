@@ -15,7 +15,7 @@ This skill generates high-converting App Store and Google Play screenshots with 
 
 - **Never include paywall or IAP screenshots** in the generated set
 - Always generate frames before composing (`python generate_frame.py`)
-- Maintain exact platform dimensions — iOS: 1290x2796, Android: 1080x1920
+- Maintain exact platform dimensions — iOS: 1320x2868, Android: 1080x1920
 - Text adapts to background luminance (white on dark, dark on light)
 - Support any language for headline text (verb + descriptor)
 
@@ -24,4 +24,4 @@ This skill generates high-converting App Store and Google Play screenshots with 
 - Python 3
 - Pillow (`pip install Pillow`)
 - Font: SF Pro Display (macOS) — falls back to system fonts on other platforms
-- Gemini API key (optional, for AI enhancement with nano-banana-pro or nano-banana-2)
+- Gemini API key (required, for AI enhancement with nano-banana-pro or nano-banana-2)
