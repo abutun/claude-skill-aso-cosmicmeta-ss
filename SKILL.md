@@ -46,10 +46,19 @@ Ask the user for the following configuration. Present as a clean checklist:
    - If not provided, attempt to auto-detect from codebase (look for theme colors, brand constants, primary colors in the project)
    - If no codebase available, ask the user
 
+6. **Gemini AI Enhancement** (Optional) — Use Gemini to polish screenshots with AI
+   - **Enable/disable**: Whether to use Gemini AI for enhancement (default: disabled)
+   - **Model**: Which Gemini model to use
+     - `nano-banana-pro` — Higher quality, slower (recommended)
+     - `nano-banana-2` — Faster, good quality
+   - **API key**: Gemini API key for authentication
+     - Can be provided directly, via `GEMINI_API_KEY` environment variable, or saved to `.gemini_config.json`
+     - To save the key for future use: `python3 gemini_enhance.py --save-key "YOUR_KEY"`
+
 Save all configuration to memory:
 ```
 memory_key: aso-screenshots-config
-data: { platforms, count, language, source_mode, brand_colour, project_name }
+data: { platforms, count, language, source_mode, brand_colour, project_name, gemini_enabled, gemini_model, gemini_api_key_configured }
 ```
 
 ---
@@ -191,12 +200,38 @@ output/
 - All screenshots must use the same brand colour, font sizing pattern, and layout style
 - Maintain visual rhythm across the set — they should look like a cohesive collection
 
-### AI Enhancement (Optional)
-If Gemini MCP is available, offer to enhance the deterministic scaffolds:
-- Add realistic textures, reflections, or lighting effects
-- Enhance background with subtle patterns or gradients
-- Crop to exact final dimensions after enhancement
-- **Always** maintain the exact store-required dimensions after any AI processing
+### AI Enhancement with Gemini (Optional)
+If Gemini enhancement was enabled in Phase 1, run `gemini_enhance.py` on each generated screenshot:
+
+```bash
+# Enhance a single screenshot
+python3 gemini_enhance.py \
+  --input "output/ios/screenshot_{n}.png" \
+  --output "output/ios/screenshot_{n}.png" \
+  --model "{gemini_model}" \
+  --api-key "{gemini_api_key}"
+
+# Or batch enhance an entire directory
+python3 gemini_enhance.py \
+  --input-dir output/ios/ \
+  --output-dir output/ios/ \
+  --model "{gemini_model}"
+```
+
+**Available models:**
+- `nano-banana-pro` — Higher quality enhancement (recommended for final output)
+- `nano-banana-2` — Faster enhancement, good quality (recommended for iteration)
+
+**What Gemini enhancement does:**
+- Adds realistic lighting effects, smooth gradients, and a premium feel
+- Enhances background quality with professional polish
+- Preserves text, device frame, and app content exactly as composed
+- **Always** enforces exact store-required dimensions after AI processing
+
+**API key resolution order:**
+1. `--api-key` CLI argument
+2. `GEMINI_API_KEY` environment variable
+3. `.gemini_config.json` file (saved via `--save-key`)
 
 Save generation state to memory:
 ```

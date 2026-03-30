@@ -11,6 +11,7 @@ Generate high-converting App Store & Google Play screenshots with device frames,
 - **Device frames** — Realistic iPhone 15 Pro and Pixel-style Android frames with Dynamic Island / punch-hole camera
 - **High CTR design** — Action verbs, visual hierarchy, bold brand colours, subtle gradients
 - **Smart text colour** — Automatically picks white or dark text based on background luminance
+- **Gemini AI enhancement** — Optional polish with `nano-banana-pro` or `nano-banana-2` models for professional-grade output
 - **No paywall rule** — Enforced throughout the workflow (never includes subscription/IAP screens)
 
 ## Requirements
@@ -18,6 +19,7 @@ Generate high-converting App Store & Google Play screenshots with device frames,
 - Python 3.8+
 - [Pillow](https://python-pillow.org/) (PIL fork)
 - macOS recommended (uses SF Pro Display font; falls back to system fonts on Linux)
+- [Gemini API key](https://aistudio.google.com/apikey) (optional, for AI enhancement)
 
 ## Installation
 
@@ -37,6 +39,23 @@ This creates two frame PNGs in `assets/`:
 - `iphone_frame.png` (1030x2800 — iPhone 15 Pro style)
 - `android_frame.png` (900x1980 — Pixel style)
 
+### Gemini API Key (Optional)
+
+If you want AI-powered screenshot enhancement, set up your Gemini API key:
+
+```bash
+# Option 1: Environment variable
+export GEMINI_API_KEY="your-api-key-here"
+
+# Option 2: Save to config file (persists across sessions)
+python3 gemini_enhance.py --save-key "your-api-key-here"
+
+# Option 3: Pass directly via CLI each time
+python3 gemini_enhance.py --api-key "your-api-key-here" ...
+```
+
+Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
+
 ## Usage
 
 ### Option A — Claude Code Skill (Recommended)
@@ -53,10 +72,10 @@ Add this repo as a skill in Claude Code and let the guided workflow handle every
 
 | Phase | What happens |
 |-------|-------------|
-| **1. Configuration** | Choose platforms (iOS/Android/both), screenshot count (6 or 8), language, screenshot source (manual or auto), and brand colour |
+| **1. Configuration** | Choose platforms (iOS/Android/both), screenshot count (6 or 8), language, screenshot source (manual or auto), brand colour, and Gemini AI model/key |
 | **2. Benefit Discovery** | Analyzes your codebase (or asks you) to identify core value propositions and craft action-verb headlines |
 | **3. Screenshot Pairing** | Matches your app screenshots to benefits, assesses quality, enforces the no-paywall rule |
-| **4. Generation** | Runs `compose.py` for each benefit-screenshot pair on each platform, verifies output quality |
+| **4. Generation** | Runs `compose.py` for each benefit-screenshot pair on each platform, optionally enhances with Gemini AI, verifies output quality |
 | **5. Showcase** | Generates a side-by-side preview and provides upload instructions for App Store Connect and Google Play Console |
 
 **Example interaction:**
@@ -114,6 +133,56 @@ python3 compose.py \
 | `--screenshot` | Yes | Path to the app screenshot PNG/JPG |
 | `--output` | Yes | Output file path |
 | `--no-gradient` | No | Disable the subtle background gradient overlay |
+
+#### gemini_enhance.py — AI-powered screenshot enhancement
+
+```bash
+# Enhance a single screenshot (uses nano-banana-pro by default)
+python3 gemini_enhance.py \
+  --input output/ios/screenshot_1.png \
+  --output output/ios/screenshot_1_enhanced.png
+
+# Use nano-banana-2 for faster processing
+python3 gemini_enhance.py \
+  --input output/ios/screenshot_1.png \
+  --output output/ios/screenshot_1_enhanced.png \
+  --model nano-banana-2
+
+# Batch enhance all screenshots in a directory
+python3 gemini_enhance.py \
+  --input-dir output/ios/ \
+  --output-dir output/ios/enhanced/ \
+  --model nano-banana-pro
+
+# Use a custom enhancement prompt
+python3 gemini_enhance.py \
+  --input screenshot.png \
+  --output enhanced.png \
+  --prompt "Add warm lighting and subtle glass reflections on the device"
+```
+
+**gemini_enhance.py arguments:**
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `--input` | Yes* | Input screenshot path |
+| `--output` | Yes* | Output enhanced screenshot path |
+| `--input-dir` | Yes* | Input directory for batch mode |
+| `--output-dir` | Yes* | Output directory for batch mode |
+| `--model` | No | `nano-banana-pro` (default, higher quality) or `nano-banana-2` (faster) |
+| `--api-key` | No | Gemini API key (or use `GEMINI_API_KEY` env var / `.gemini_config.json`) |
+| `--save-key` | No | Save API key to `.gemini_config.json` for future use |
+| `--prompt` | No | Custom enhancement prompt (overrides default) |
+| `--platform` | No | Force `ios` or `android` (auto-detected from dimensions) |
+
+*Use either `--input`/`--output` for single file or `--input-dir`/`--output-dir` for batch.
+
+**Gemini models:**
+
+| Model | Quality | Speed | Best for |
+|-------|---------|-------|----------|
+| `nano-banana-pro` | Higher | Slower | Final production screenshots |
+| `nano-banana-2` | Good | Faster | Rapid iteration and previews |
 
 #### showcase.py — Generate a preview gallery
 
