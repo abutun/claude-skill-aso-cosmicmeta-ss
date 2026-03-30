@@ -57,7 +57,14 @@ except ImportError:
 # ─── Defaults ───────────────────────────────────────────────────────
 
 DEFAULT_MODEL = "nano-banana-pro"
-SUPPORTED_MODELS = ["nano-banana-pro", "nano-banana-2"]
+SUPPORTED_MODELS = ["nano-banana-pro", "nano-banana-2", "nano-banana",
+                    "gemini-3-pro-image-preview", "gemini-3.1-flash-image-preview",
+                    "gemini-2.5-flash-image"]
+MODEL_ALIASES = {
+    "nano-banana-pro": "gemini-3-pro-image-preview",
+    "nano-banana-2": "gemini-3.1-flash-image-preview",
+    "nano-banana": "gemini-2.5-flash-image",
+}
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
@@ -71,6 +78,9 @@ DEFAULT_ENHANCE_PROMPT = (
     "- If the background is light, text MUST be deep black or dark color\n"
     "- Text should NEVER blend into or be hard to read against the background\n"
     "- Keep the exact same text content, font style, and positioning\n"
+    "- NEVER alter, strip, or replace language-specific characters "
+    "(Turkish: İ,Ç,Ö,Ü,Ğ,Ş / German: Ä,Ö,Ü,ß / accented: É,Ñ,À, etc.)\n"
+    "- Preserve every character exactly as shown — incorrect letters destroy readability\n"
     "\n"
     "VISUAL ENHANCEMENTS:\n"
     "- Add floating decorative elements related to the app's purpose "
@@ -106,6 +116,9 @@ ALTERNATE_ENHANCE_PROMPT = (
     "backgrounds, deep dark on light backgrounds\n"
     "- Add a subtle text glow or shadow to ensure text pops against any background\n"
     "- Keep the exact same text content and positioning\n"
+    "- NEVER alter, strip, or replace language-specific characters "
+    "(Turkish: İ,Ç,Ö,Ü,Ğ,Ş / German: Ä,Ö,Ü,ß / accented: É,Ñ,À, etc.)\n"
+    "- Preserve every character exactly as shown — incorrect letters destroy readability\n"
     "\n"
     "VISUAL STYLE:\n"
     "- Tilt the phone at a slight angle (10-20 degrees) for a dynamic, "
@@ -215,6 +228,9 @@ def enhance_with_gemini(image_path, output_path, api_key, model=DEFAULT_MODEL,
     if model not in SUPPORTED_MODELS:
         print(f"  Error: Unknown model '{model}'. Supported: {', '.join(SUPPORTED_MODELS)}")
         return False
+
+    # Resolve friendly alias to actual API model ID
+    model = MODEL_ALIASES.get(model, model)
 
     # Alternate prompts for visual variety across the set
     if prompt:

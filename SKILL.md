@@ -95,6 +95,12 @@ Each benefit needs two parts:
 
 **Language adaptation**: If the configured language is not English, translate both verb and descriptor naturally. Don't do literal translations — use idiomatic expressions that sound compelling in the target language.
 
+**CRITICAL — Language-specific characters**: When using non-English languages, pay strict attention to special characters and their correct uppercase/lowercase forms. Headlines are rendered in ALL CAPS, so correct uppercasing is essential:
+- **Turkish**: İ/i (not I/i), Ç/ç, Ö/ö, Ü/ü, Ğ/ğ, Ş/ş — e.g., "İZLE" not "IZLE", "GÜÇLÜ" not "GUCLU"
+- **German**: Ä/ä, Ö/ö, Ü/ü, ß/SS — e.g., "ÜBERBLICK" not "UBERBLICK"
+- **Spanish/French**: accented characters (É, Ñ, À, etc.) must be preserved in uppercase
+- **All languages**: Never strip, replace, or ASCII-ify special characters. They are required for correct spelling and readability.
+
 ### Present to user
 Show the complete benefit list as a numbered table:
 
