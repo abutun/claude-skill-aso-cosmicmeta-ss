@@ -83,7 +83,7 @@ Add this repo as a skill in Claude Code and let the guided workflow handle every
 **Method 1 — Using `npx add-skill` CLI (easiest):**
 
 ```bash
-npx add-skill abutun/claude-skill-aso-cosmicmeta-ss
+npx skills add abutun/claude-skill-aso-cosmicmeta-ss
 ```
 
 Select the installation scope when prompted:
