@@ -2,6 +2,8 @@
 
 Generate high-converting App Store & Google Play screenshots with device frames, benefit-driven headlines, multi-language support, and cultural visual touches. Works as a standalone CLI tool or as a Claude Code skill with a guided 6-phase workflow.
 
+<img width="1997" height="1920" alt="showcase" src="https://github.com/user-attachments/assets/8169944d-9f90-4b9c-bdbf-8ae313488399" />
+
 ## Features
 
 - **4 platforms** — iOS phone (1320×2868), Android phone (1080×1920), iPad Pro 13" (2064×2752), Android tablet (1600×2560)
