@@ -181,43 +181,47 @@ This creates:
 
 Output filenames follow the format `{LANG_CODE}_{SS_NUMBER}` (e.g., `en_01.png`, `en_02.png`).
 
+**CRITICAL — pairing rule**: Screenshot number N (filename `en_0N.png`) ALWAYS uses the Nth pairing (1st pairing for en_01, 2nd pairing for en_02, etc.). There is NO "cover" screenshot without a headline — every single compose.py call must have `--verb` and `--desc` from a real pairing. If you pass empty `--verb` or `--desc`, compose.py will error.
+
+Concretely, for N screenshots, run EXACTLY N compose.py calls:
+
+- `en_01.png` → pairing 1 (first benefit, first screenshot)
+- `en_02.png` → pairing 2 (second benefit, second screenshot)
+- `en_03.png` → pairing 3
+- … and so on through `en_0N.png` → pairing N
+
 ```bash
-# iOS phone
+# Screenshot 1 — first pairing
 python compose.py \
   --platform ios \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path}" \
-  --output "output/en/ios/en_{n:02d}.png"
+  --verb "{verb_1}" \
+  --desc "{descriptor_1}" \
+  --screenshot "{screenshot_1}" \
+  --output "output/en/ios/en_01.png"
 
-# Android phone
+# Screenshot 2 — second pairing
 python compose.py \
-  --platform android \
+  --platform ios \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path}" \
-  --output "output/en/android/en_{n:02d}.png"
+  --verb "{verb_2}" \
+  --desc "{descriptor_2}" \
+  --screenshot "{screenshot_2}" \
+  --output "output/en/ios/en_02.png"
 
-# iPad Pro 13" (if tablet selected)
-python compose.py \
-  --platform ipad \
-  --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path_tablet}" \
-  --output "output/en/ipad/en_{n:02d}.png"
+# … continue through all N pairings in order …
 
-# Android tablet (if tablet selected)
+# Screenshot N — Nth pairing
 python compose.py \
-  --platform android_tablet \
+  --platform ios \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path_tablet}" \
-  --output "output/en/android_tablet/en_{n:02d}.png"
+  --verb "{verb_N}" \
+  --desc "{descriptor_N}" \
+  --screenshot "{screenshot_N}" \
+  --output "output/en/ios/en_0N.png"
 ```
+
+Run the same set of commands for each additional platform (android, ipad, android_tablet) using the same verbs/descs and the appropriate screenshot paths.
 
 **Note on tablet screenshots**: Tablet app screenshots should ideally be taken from the iPad/tablet simulator. If the user only has phone screenshots, they can still be used — compose.py will scale them to fit the device screen area.
 

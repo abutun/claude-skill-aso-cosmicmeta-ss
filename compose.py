@@ -286,7 +286,7 @@ def compose(platform, bg_hex, verb, desc, screenshot_path, output_path,
 
     # ── 6. Save ─────────────────────────────────────────────────────
     canvas.convert("RGB").save(output_path, "PNG")
-    print(f"  {output_path} ({canvas_w}x{canvas_h})")
+    print(f"  {output_path} ({canvas_w}x{canvas_h}) | verb={verb!r} desc={desc!r}")
 
 
 def main():
@@ -310,6 +310,11 @@ def main():
         help="Disable subtle background gradient",
     )
     args = p.parse_args()
+
+    if not args.verb.strip():
+        p.error("--verb cannot be empty: every screenshot must have a headline verb (e.g. TRACK)")
+    if not args.desc.strip():
+        p.error("--desc cannot be empty: every screenshot must have a descriptor (e.g. YOUR DAILY MOOD)")
 
     compose(
         args.platform,
