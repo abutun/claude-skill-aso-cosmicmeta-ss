@@ -181,41 +181,52 @@ This creates:
 
 Output filenames follow the format `{LANG_CODE}_{SS_NUMBER}` (e.g., `en_01.png`, `en_02.png`).
 
+**CRITICAL — Iteration order**: Always iterate pairings using a 1-based counter that maps **directly** to the pairing at that same 1-based position. Use the pattern `for n, pairing in enumerate(pairings, start=1)` — where `n` is the 1-based screenshot number (used in the filename) and `pairing` is `pairings[n-1]` (the 0-indexed entry). This means:
+
+| n (filename) | Pairing used | Verb/Desc source |
+|---|---|---|
+| 1 → `en_01.png` | `pairings[0]` | benefit #1 |
+| 2 → `en_02.png` | `pairings[1]` | benefit #2 |
+| 3 → `en_03.png` | `pairings[2]` | benefit #3 |
+| … | … | … |
+
+**Never use `n` to index into the pairings list directly** (that would cause an off-by-one shift where `en_01.png` has no headline and every subsequent file uses the wrong benefit).
+
 ```bash
 # iOS phone
 python compose.py \
   --platform ios \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path}" \
+  --verb "{verb_from_pairings[n-1]}" \
+  --desc "{descriptor_from_pairings[n-1]}" \
+  --screenshot "{screenshot_path_from_pairings[n-1]}" \
   --output "output/en/ios/en_{n:02d}.png"
 
 # Android phone
 python compose.py \
   --platform android \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path}" \
+  --verb "{verb_from_pairings[n-1]}" \
+  --desc "{descriptor_from_pairings[n-1]}" \
+  --screenshot "{screenshot_path_from_pairings[n-1]}" \
   --output "output/en/android/en_{n:02d}.png"
 
 # iPad Pro 13" (if tablet selected)
 python compose.py \
   --platform ipad \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path_tablet}" \
+  --verb "{verb_from_pairings[n-1]}" \
+  --desc "{descriptor_from_pairings[n-1]}" \
+  --screenshot "{screenshot_tablet_path_from_pairings[n-1]}" \
   --output "output/en/ipad/en_{n:02d}.png"
 
 # Android tablet (if tablet selected)
 python compose.py \
   --platform android_tablet \
   --bg "{brand_colour}" \
-  --verb "{verb}" \
-  --desc "{descriptor}" \
-  --screenshot "{screenshot_path_tablet}" \
+  --verb "{verb_from_pairings[n-1]}" \
+  --desc "{descriptor_from_pairings[n-1]}" \
+  --screenshot "{screenshot_tablet_path_from_pairings[n-1]}" \
   --output "output/en/android_tablet/en_{n:02d}.png"
 ```
 
