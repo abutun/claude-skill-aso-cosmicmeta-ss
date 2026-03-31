@@ -43,8 +43,8 @@ PLATFORMS = {
         "device_w": 900,
         "bezel": 14,
         "screen_corner_r": 41,
-        "device_y": 520,
-        "text_top": 130,
+        "device_y": 620,   # was 520 — pushed down to prevent text overflow into device
+        "text_top": 150,   # was 130 — slightly more top breathing room
         "verb_size_max": 200,
         "verb_size_min": 120,
         "desc_size": 96,
